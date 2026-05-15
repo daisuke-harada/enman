@@ -3,8 +3,11 @@ package handler
 
 type Handler struct {
 	DeleteAuthLogoutHandler
+	GetFamiliesGoalsHandler
+	GetFamilyTimelineHandler
 	GetHealthHandler
 	GetNotificationsHandler
+	GetStatsContributionsHandler
 	GetTaskTemplatesHandler
 	GetTasksHandler
 	GetUsersMeHandler
@@ -14,6 +17,7 @@ type Handler struct {
 	PostAuthRefreshHandler
 	PostAuthRegisterHandler
 	PostFamiliesHandler
+	PostFamiliesGoalsHandler
 	PostFamiliesJoinHandler
 	PostTasksHandler
 	PostTasksAppreciationHandler

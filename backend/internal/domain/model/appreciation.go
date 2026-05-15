@@ -23,4 +23,5 @@ type Appreciation struct {
 
 	Task     *Task `gorm:"foreignKey:TaskID"`
 	FromUser *User `gorm:"foreignKey:FromUserID"`
+	ToUser   *User `gorm:"foreignKey:ToUserID"`
 }

@@ -50,6 +50,18 @@ func NewHandler(container *di.Container) *Handler {
 		GetNotificationsHandler: GetNotificationsHandler{
 			InputPort: di.MustInvoke[usecase.ListNotificationsInputPort](container),
 		},
+		GetStatsContributionsHandler: GetStatsContributionsHandler{
+			InputPort: di.MustInvoke[usecase.GetContributionsInputPort](container),
+		},
+		GetFamilyTimelineHandler: GetFamilyTimelineHandler{
+			InputPort: di.MustInvoke[usecase.GetFamilyTimelineInputPort](container),
+		},
+		GetFamiliesGoalsHandler: GetFamiliesGoalsHandler{
+			InputPort: di.MustInvoke[usecase.ListFamilyGoalsInputPort](container),
+		},
+		PostFamiliesGoalsHandler: PostFamiliesGoalsHandler{
+			InputPort: di.MustInvoke[usecase.CreateFamilyGoalInputPort](container),
+		},
 		GetHealthHandler: GetHealthHandler{},
 	}
 }

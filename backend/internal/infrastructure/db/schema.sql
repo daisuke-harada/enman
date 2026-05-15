@@ -60,6 +60,18 @@ CREATE TABLE tasks (
   CONSTRAINT fk_tasks_done_by FOREIGN KEY (done_by) REFERENCES users (id)
 );
 
+CREATE TABLE family_goals (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  family_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  target_points INT NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_family_goals_family (family_id),
+  CONSTRAINT fk_family_goals_family FOREIGN KEY (family_id) REFERENCES families (id)
+);
+
 CREATE TABLE appreciations (
   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
   task_id BIGINT UNSIGNED NOT NULL,

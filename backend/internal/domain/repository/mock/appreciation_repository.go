@@ -55,6 +55,21 @@ func (mr *MockAppreciationRepositoryMockRecorder) Create(ctx, appreciation any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAppreciationRepository)(nil).Create), ctx, appreciation)
 }
 
+// FindByFamilyID mocks base method.
+func (m *MockAppreciationRepository) FindByFamilyID(ctx context.Context, familyID uint) ([]*model.Appreciation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByFamilyID", ctx, familyID)
+	ret0, _ := ret[0].([]*model.Appreciation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByFamilyID indicates an expected call of FindByFamilyID.
+func (mr *MockAppreciationRepositoryMockRecorder) FindByFamilyID(ctx, familyID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByFamilyID", reflect.TypeOf((*MockAppreciationRepository)(nil).FindByFamilyID), ctx, familyID)
+}
+
 // FindByToUserID mocks base method.
 func (m *MockAppreciationRepository) FindByToUserID(ctx context.Context, toUserID uint) ([]*model.Appreciation, error) {
 	m.ctrl.T.Helper()

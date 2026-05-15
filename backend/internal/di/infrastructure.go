@@ -24,6 +24,8 @@ func ProvideRepositories(ct *Container) {
 	ct.MustProvide(persistence.NewTaskRepository)
 	ct.MustProvide(persistence.NewTaskTemplateRepository)
 	ct.MustProvide(persistence.NewAppreciationRepository)
+	ct.MustProvide(persistence.NewFamilyGoalRepository)
+	ct.MustProvide(persistence.NewStatsRepository)
 }
 
 // ProvideServices は全ドメインサービスのコンストラクタを Container に登録します。
@@ -46,4 +48,8 @@ func ProvideUsecases(ct *Container) {
 	ct.MustProvide(usecase.NewListTaskTemplatesInteractor, dig.As(new(usecase.ListTaskTemplatesInputPort)))
 	ct.MustProvide(usecase.NewSendAppreciationInteractor, dig.As(new(usecase.SendAppreciationInputPort)))
 	ct.MustProvide(usecase.NewListNotificationsInteractor, dig.As(new(usecase.ListNotificationsInputPort)))
+	ct.MustProvide(usecase.NewGetContributionsInteractor, dig.As(new(usecase.GetContributionsInputPort)))
+	ct.MustProvide(usecase.NewGetFamilyTimelineInteractor, dig.As(new(usecase.GetFamilyTimelineInputPort)))
+	ct.MustProvide(usecase.NewListFamilyGoalsInteractor, dig.As(new(usecase.ListFamilyGoalsInputPort)))
+	ct.MustProvide(usecase.NewCreateFamilyGoalInteractor, dig.As(new(usecase.CreateFamilyGoalInputPort)))
 }

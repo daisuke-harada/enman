@@ -114,6 +114,7 @@ type AppreciationResponse struct {
 	TaskId       *int64                         `json:"task_id,omitempty"`
 	TaskTitle    *string                        `json:"task_title,omitempty"`
 	ToUserId     *int64                         `json:"to_user_id,omitempty"`
+	ToUserName   *string                        `json:"to_user_name,omitempty"`
 }
 
 // AppreciationResponseStampType defines model for AppreciationResponse.StampType.
@@ -126,6 +127,20 @@ type AuthResponse struct {
 	User         *UserResponse `json:"user,omitempty"`
 }
 
+// ContributionItem defines model for ContributionItem.
+type ContributionItem struct {
+	Category *string `json:"category,omitempty"`
+	Count    *int    `json:"count,omitempty"`
+	UserId   *int64  `json:"user_id,omitempty"`
+	UserName *string `json:"user_name,omitempty"`
+}
+
+// CreateFamilyGoalRequest defines model for CreateFamilyGoalRequest.
+type CreateFamilyGoalRequest struct {
+	TargetPoints int    `json:"target_points"`
+	Title        string `json:"title"`
+}
+
 // CreateFamilyRequest defines model for CreateFamilyRequest.
 type CreateFamilyRequest struct {
 	Name string `json:"name"`
@@ -135,6 +150,15 @@ type CreateFamilyRequest struct {
 type CreateTaskRequest struct {
 	Category *string `json:"category,omitempty"`
 	Title    string  `json:"title"`
+}
+
+// FamilyGoalResponse defines model for FamilyGoalResponse.
+type FamilyGoalResponse struct {
+	CreatedAt     *time.Time `json:"created_at,omitempty"`
+	CurrentPoints *int       `json:"current_points,omitempty"`
+	Id            *int64     `json:"id,omitempty"`
+	TargetPoints  *int       `json:"target_points,omitempty"`
+	Title         *string    `json:"title,omitempty"`
 }
 
 // FamilyResponse defines model for FamilyResponse.
@@ -269,6 +293,9 @@ type PostAuthRegisterJSONRequestBody = RegisterRequest
 
 // PostFamiliesJSONRequestBody defines body for PostFamilies for application/json ContentType.
 type PostFamiliesJSONRequestBody = CreateFamilyRequest
+
+// PostFamiliesGoalsJSONRequestBody defines body for PostFamiliesGoals for application/json ContentType.
+type PostFamiliesGoalsJSONRequestBody = CreateFamilyGoalRequest
 
 // PostFamiliesJoinJSONRequestBody defines body for PostFamiliesJoin for application/json ContentType.
 type PostFamiliesJoinJSONRequestBody = JoinFamilyRequest

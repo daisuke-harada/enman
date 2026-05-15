@@ -24,6 +24,10 @@ tags:
   name: appreciations
 - description: 通知センター
   name: notifications
+- description: 貢献度統計
+  name: stats
+- description: ご褒美目標
+  name: goals
 paths:
   /health:
     get:
@@ -370,6 +374,101 @@ paths:
       summary: 通知一覧取得（自分宛の感謝）
       tags:
       - notifications
+  /stats/contributions:
+    get:
+      operationId: getStatsContributions
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ContributionItem"
+                type: array
+          description: 貢献度統計取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 家族の貢献度統計取得
+      tags:
+      - stats
+  /family/timeline:
+    get:
+      operationId: getFamilyTimeline
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AppreciationResponse"
+                type: array
+          description: タイムライン取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 感謝タイムライン取得（家族全体）
+      tags:
+      - appreciations
+  /families/goals:
+    get:
+      operationId: getFamiliesGoals
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/FamilyGoalResponse"
+                type: array
+          description: 目標一覧取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: ご褒美目標一覧取得
+      tags:
+      - goals
+    post:
+      operationId: postFamiliesGoals
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFamilyGoalRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyGoalResponse"
+          description: 目標作成成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: ご褒美目標作成
+      tags:
+      - goals
   /users/me:
     get:
       operationId: getUsersMe
@@ -700,6 +799,7 @@ components:
       example:
         from_user_name: from_user_name
         to_user_id: 5
+        to_user_name: to_user_name
         task_title: task_title
         created_at: 2000-01-23T04:56:07.000+00:00
         task_id: 6
@@ -724,6 +824,8 @@ components:
         to_user_id:
           format: int64
           type: integer
+        to_user_name:
+          type: string
         stamp_type:
           enum:
           - great
@@ -738,6 +840,60 @@ components:
         created_at:
           format: date-time
           type: string
+      type: object
+    ContributionItem:
+      example:
+        user_id: 0
+        user_name: user_name
+        count: 6
+        category: category
+      properties:
+        user_id:
+          format: int64
+          type: integer
+        user_name:
+          type: string
+        category:
+          type: string
+        count:
+          type: integer
+      type: object
+    FamilyGoalResponse:
+      example:
+        target_points: 6
+        current_points: 1
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 0
+        title: title
+      properties:
+        id:
+          format: int64
+          type: integer
+        title:
+          type: string
+        target_points:
+          type: integer
+        current_points:
+          type: integer
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    CreateFamilyGoalRequest:
+      example:
+        target_points: 100
+        title: 週末の焼肉
+      properties:
+        title:
+          example: 週末の焼肉
+          type: string
+        target_points:
+          example: 100
+          minimum: 1
+          type: integer
+      required:
+      - target_points
+      - title
       type: object
     getHealth_200_response:
       example:

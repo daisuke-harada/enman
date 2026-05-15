@@ -8,8 +8,12 @@ package openapi
 var bearerAuthRoutes = map[string]struct{}{
 	"DELETE /auth/logout": {},
 	"POST /families": {},
+	"GET /families/goals": {},
+	"POST /families/goals": {},
 	"POST /families/join": {},
+	"GET /family/timeline": {},
 	"GET /notifications": {},
+	"GET /stats/contributions": {},
 	"GET /task-templates": {},
 	"GET /tasks": {},
 	"POST /tasks": {},

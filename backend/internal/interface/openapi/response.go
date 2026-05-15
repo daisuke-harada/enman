@@ -2,6 +2,7 @@ package openapi
 
 import (
 	"github.com/daisuke-harada/enman/internal/domain/model"
+	"github.com/daisuke-harada/enman/internal/domain/repository"
 	"github.com/daisuke-harada/enman/internal/usecase"
 )
 
@@ -98,13 +99,13 @@ func NewAppreciationResponse(a *model.Appreciation) AppreciationResponse {
 	stampType := AppreciationResponseStampType(a.StampType)
 
 	resp := AppreciationResponse{
-		Id:          &id,
-		TaskId:      &taskID,
-		FromUserId:  &fromUserID,
-		ToUserId:    &toUserID,
-		StampType:   &stampType,
-		Message:     a.Message,
-		CreatedAt:   &a.CreatedAt,
+		Id:         &id,
+		TaskId:     &taskID,
+		FromUserId: &fromUserID,
+		ToUserId:   &toUserID,
+		StampType:  &stampType,
+		Message:    a.Message,
+		CreatedAt:  &a.CreatedAt,
 	}
 	if a.Task != nil {
 		resp.TaskTitle = &a.Task.Title
@@ -112,5 +113,29 @@ func NewAppreciationResponse(a *model.Appreciation) AppreciationResponse {
 	if a.FromUser != nil {
 		resp.FromUserName = &a.FromUser.Name
 	}
+	if a.ToUser != nil {
+		resp.ToUserName = &a.ToUser.Name
+	}
 	return resp
+}
+
+func NewContributionItemResponse(item *repository.ContributionItem) ContributionItem {
+	userID := int64(item.UserID)
+	return ContributionItem{
+		UserId:   &userID,
+		UserName: &item.UserName,
+		Category: &item.Category,
+		Count:    &item.Count,
+	}
+}
+
+func NewFamilyGoalResponse(gwp *usecase.FamilyGoalWithPoints) FamilyGoalResponse {
+	id := int64(gwp.Goal.ID)
+	return FamilyGoalResponse{
+		Id:            &id,
+		Title:         &gwp.Goal.Title,
+		TargetPoints:  &gwp.Goal.TargetPoints,
+		CurrentPoints: &gwp.CurrentPoints,
+		CreatedAt:     &gwp.Goal.CreatedAt,
+	}
 }

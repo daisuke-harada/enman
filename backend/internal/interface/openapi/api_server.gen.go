@@ -28,15 +28,27 @@ type ServerInterface interface {
 	// 家族グループ作成
 	// (POST /families)
 	PostFamilies(ctx echo.Context) error
+	// ご褒美目標一覧取得
+	// (GET /families/goals)
+	GetFamiliesGoals(ctx echo.Context) error
+	// ご褒美目標作成
+	// (POST /families/goals)
+	PostFamiliesGoals(ctx echo.Context) error
 	// 招待コードで家族グループに参加
 	// (POST /families/join)
 	PostFamiliesJoin(ctx echo.Context) error
+	// 感謝タイムライン取得（家族全体）
+	// (GET /family/timeline)
+	GetFamilyTimeline(ctx echo.Context) error
 	// Health check
 	// (GET /health)
 	GetHealth(ctx echo.Context) error
 	// 通知一覧取得（自分宛の感謝）
 	// (GET /notifications)
 	GetNotifications(ctx echo.Context) error
+	// 家族の貢献度統計取得
+	// (GET /stats/contributions)
+	GetStatsContributions(ctx echo.Context) error
 	// 家事テンプレート一覧取得
 	// (GET /task-templates)
 	GetTaskTemplates(ctx echo.Context) error
@@ -114,6 +126,28 @@ func (w *ServerInterfaceWrapper) PostFamilies(ctx echo.Context) error {
 	return err
 }
 
+// GetFamiliesGoals converts echo context to params.
+func (w *ServerInterfaceWrapper) GetFamiliesGoals(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetFamiliesGoals(ctx)
+	return err
+}
+
+// PostFamiliesGoals converts echo context to params.
+func (w *ServerInterfaceWrapper) PostFamiliesGoals(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostFamiliesGoals(ctx)
+	return err
+}
+
 // PostFamiliesJoin converts echo context to params.
 func (w *ServerInterfaceWrapper) PostFamiliesJoin(ctx echo.Context) error {
 	var err error
@@ -122,6 +156,17 @@ func (w *ServerInterfaceWrapper) PostFamiliesJoin(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostFamiliesJoin(ctx)
+	return err
+}
+
+// GetFamilyTimeline converts echo context to params.
+func (w *ServerInterfaceWrapper) GetFamilyTimeline(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetFamilyTimeline(ctx)
 	return err
 }
 
@@ -142,6 +187,17 @@ func (w *ServerInterfaceWrapper) GetNotifications(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetNotifications(ctx)
+	return err
+}
+
+// GetStatsContributions converts echo context to params.
+func (w *ServerInterfaceWrapper) GetStatsContributions(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetStatsContributions(ctx)
 	return err
 }
 
@@ -297,9 +353,13 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.POST(options.BaseURL+"/auth/refresh", wrapper.PostAuthRefresh, options.OperationMiddlewares["postAuthRefresh"]...)
 	router.POST(options.BaseURL+"/auth/register", wrapper.PostAuthRegister, options.OperationMiddlewares["postAuthRegister"]...)
 	router.POST(options.BaseURL+"/families", wrapper.PostFamilies, options.OperationMiddlewares["postFamilies"]...)
+	router.GET(options.BaseURL+"/families/goals", wrapper.GetFamiliesGoals, options.OperationMiddlewares["getFamiliesGoals"]...)
+	router.POST(options.BaseURL+"/families/goals", wrapper.PostFamiliesGoals, options.OperationMiddlewares["postFamiliesGoals"]...)
 	router.POST(options.BaseURL+"/families/join", wrapper.PostFamiliesJoin, options.OperationMiddlewares["postFamiliesJoin"]...)
+	router.GET(options.BaseURL+"/family/timeline", wrapper.GetFamilyTimeline, options.OperationMiddlewares["getFamilyTimeline"]...)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth, options.OperationMiddlewares["getHealth"]...)
 	router.GET(options.BaseURL+"/notifications", wrapper.GetNotifications, options.OperationMiddlewares["getNotifications"]...)
+	router.GET(options.BaseURL+"/stats/contributions", wrapper.GetStatsContributions, options.OperationMiddlewares["getStatsContributions"]...)
 	router.GET(options.BaseURL+"/task-templates", wrapper.GetTaskTemplates, options.OperationMiddlewares["getTaskTemplates"]...)
 	router.GET(options.BaseURL+"/tasks", wrapper.GetTasks, options.OperationMiddlewares["getTasks"]...)
 	router.POST(options.BaseURL+"/tasks", wrapper.PostTasks, options.OperationMiddlewares["postTasks"]...)

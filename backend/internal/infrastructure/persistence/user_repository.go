@@ -39,6 +39,14 @@ func (r *userRepository) FindByEmail(ctx context.Context, email string) (*model.
 	return &user, err
 }
 
+func (r *userRepository) FindByFamilyID(ctx context.Context, familyID uint) ([]*model.User, error) {
+	var users []*model.User
+	if err := r.db.WithContext(ctx).Where("family_id = ?", familyID).Find(&users).Error; err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
 func (r *userRepository) Update(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Save(user).Error
 }

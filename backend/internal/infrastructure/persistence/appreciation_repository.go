@@ -33,3 +33,19 @@ func (r *appreciationRepository) FindByToUserID(ctx context.Context, toUserID ui
 	}
 	return appreciations, nil
 }
+
+func (r *appreciationRepository) FindByFamilyID(ctx context.Context, familyID uint) ([]*model.Appreciation, error) {
+	var appreciations []*model.Appreciation
+	err := r.db.WithContext(ctx).
+		Preload("Task").
+		Preload("FromUser").
+		Preload("ToUser").
+		Joins("JOIN tasks ON tasks.id = appreciations.task_id").
+		Where("tasks.family_id = ?", familyID).
+		Order("appreciations.created_at DESC").
+		Find(&appreciations).Error
+	if err != nil {
+		return nil, err
+	}
+	return appreciations, nil
+}
