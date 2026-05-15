@@ -9,9 +9,8 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// JWTAuthMiddleware は JWT Bearer トークンを検証します。
-// 認証が必要かどうかは iface_openapi.RequiresBearerAuth を通じて判定します。
-// ユーザー情報の取得・セットはアプリケーション固有のため、各プロジェクトで実装してください。
+const CurrentUserIDKey = "currentUserID"
+
 func JWTAuthMiddleware(secretKey string) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(ctx echo.Context) error {
@@ -27,14 +26,12 @@ func JWTAuthMiddleware(secretKey string) echo.MiddlewareFunc {
 			}
 
 			tokenStr := strings.TrimPrefix(authHeader, "Bearer ")
-			_, err := jwtpkg.Decode(tokenStr, secretKey)
+			userID, err := jwtpkg.Decode(tokenStr, secretKey)
 			if err != nil {
 				return err
 			}
 
-			// TODO: トークンから取得した userID でユーザーをフェッチし、
-			// ctx.Set("currentUser", user) でコンテキストにセットしてください。
-
+			ctx.Set(CurrentUserIDKey, userID)
 			return next(ctx)
 		}
 	}

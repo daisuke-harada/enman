@@ -1,9 +1,36 @@
--- テンプレート初期状態: テーブル定義はここに追加してください
--- 例:
--- CREATE TABLE users (
---   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
---   name VARCHAR(255) NOT NULL,
---   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
---   PRIMARY KEY (id)
--- );
+CREATE TABLE families (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  invite_code VARCHAR(12) NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_families_invite_code (invite_code)
+);
+
+CREATE TABLE users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  family_id BIGINT UNSIGNED,
+  name VARCHAR(255) NOT NULL,
+  role VARCHAR(50) NOT NULL DEFAULT 'member',
+  icon_url VARCHAR(1024),
+  email VARCHAR(255) NOT NULL,
+  password_digest VARCHAR(255) NOT NULL,
+  enman_point INT NOT NULL DEFAULT 0,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_email (email),
+  CONSTRAINT fk_users_family_id FOREIGN KEY (family_id) REFERENCES families (id)
+);
+
+CREATE TABLE refresh_tokens (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id BIGINT UNSIGNED NOT NULL,
+  token_hash VARCHAR(255) NOT NULL,
+  expired_at DATETIME NOT NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_refresh_tokens_token_hash (token_hash),
+  CONSTRAINT fk_refresh_tokens_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);

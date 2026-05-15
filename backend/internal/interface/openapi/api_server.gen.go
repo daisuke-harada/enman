@@ -9,14 +9,98 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// ログイン
+	// (POST /auth/login)
+	PostAuthLogin(ctx echo.Context) error
+	// ログアウト
+	// (DELETE /auth/logout)
+	DeleteAuthLogout(ctx echo.Context) error
+	// アクセストークン更新
+	// (POST /auth/refresh)
+	PostAuthRefresh(ctx echo.Context) error
+	// ユーザー登録
+	// (POST /auth/register)
+	PostAuthRegister(ctx echo.Context) error
+	// 家族グループ作成
+	// (POST /families)
+	PostFamilies(ctx echo.Context) error
+	// 招待コードで家族グループに参加
+	// (POST /families/join)
+	PostFamiliesJoin(ctx echo.Context) error
 	// Health check
 	// (GET /health)
 	GetHealth(ctx echo.Context) error
+	// 自分のプロフィール取得
+	// (GET /users/me)
+	GetUsersMe(ctx echo.Context) error
+	// プロフィール更新
+	// (PATCH /users/me)
+	PatchUsersMe(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// PostAuthLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAuthLogin(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAuthLogin(ctx)
+	return err
+}
+
+// DeleteAuthLogout converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteAuthLogout(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteAuthLogout(ctx)
+	return err
+}
+
+// PostAuthRefresh converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAuthRefresh(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAuthRefresh(ctx)
+	return err
+}
+
+// PostAuthRegister converts echo context to params.
+func (w *ServerInterfaceWrapper) PostAuthRegister(ctx echo.Context) error {
+	var err error
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostAuthRegister(ctx)
+	return err
+}
+
+// PostFamilies converts echo context to params.
+func (w *ServerInterfaceWrapper) PostFamilies(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostFamilies(ctx)
+	return err
+}
+
+// PostFamiliesJoin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostFamiliesJoin(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostFamiliesJoin(ctx)
+	return err
 }
 
 // GetHealth converts echo context to params.
@@ -25,6 +109,28 @@ func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.GetHealth(ctx)
+	return err
+}
+
+// GetUsersMe converts echo context to params.
+func (w *ServerInterfaceWrapper) GetUsersMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetUsersMe(ctx)
+	return err
+}
+
+// PatchUsersMe converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchUsersMe(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchUsersMe(ctx)
 	return err
 }
 
@@ -75,6 +181,14 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 		Handler: si,
 	}
 
+	router.POST(options.BaseURL+"/auth/login", wrapper.PostAuthLogin, options.OperationMiddlewares["postAuthLogin"]...)
+	router.DELETE(options.BaseURL+"/auth/logout", wrapper.DeleteAuthLogout, options.OperationMiddlewares["deleteAuthLogout"]...)
+	router.POST(options.BaseURL+"/auth/refresh", wrapper.PostAuthRefresh, options.OperationMiddlewares["postAuthRefresh"]...)
+	router.POST(options.BaseURL+"/auth/register", wrapper.PostAuthRegister, options.OperationMiddlewares["postAuthRegister"]...)
+	router.POST(options.BaseURL+"/families", wrapper.PostFamilies, options.OperationMiddlewares["postFamilies"]...)
+	router.POST(options.BaseURL+"/families/join", wrapper.PostFamiliesJoin, options.OperationMiddlewares["postFamiliesJoin"]...)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth, options.OperationMiddlewares["getHealth"]...)
+	router.GET(options.BaseURL+"/users/me", wrapper.GetUsersMe, options.OperationMiddlewares["getUsersMe"]...)
+	router.PATCH(options.BaseURL+"/users/me", wrapper.PatchUsersMe, options.OperationMiddlewares["patchUsersMe"]...)
 
 }

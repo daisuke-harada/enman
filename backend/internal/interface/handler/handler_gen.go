@@ -2,5 +2,13 @@
 package handler
 
 type Handler struct {
+	DeleteAuthLogoutHandler
 	GetHealthHandler
+	GetUsersMeHandler
+	PatchUsersMeHandler
+	PostAuthLoginHandler
+	PostAuthRefreshHandler
+	PostAuthRegisterHandler
+	PostFamiliesHandler
+	PostFamiliesJoinHandler
 }

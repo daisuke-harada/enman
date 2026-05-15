@@ -6,6 +6,11 @@ package openapi
 // bearerAuthRoutes は Bearer JWT 認証が必要なルートの集合です。
 // キー形式: "METHOD /echo/path/pattern"
 var bearerAuthRoutes = map[string]struct{}{
+	"DELETE /auth/logout": {},
+	"POST /families": {},
+	"POST /families/join": {},
+	"GET /users/me": {},
+	"PATCH /users/me": {},
 }
 
 // RequiresBearerAuth は指定の HTTP メソッドと Echo ルートパターンが

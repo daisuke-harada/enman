@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: My API
+  title: enman API
   version: 0.1.0
 servers:
 - description: Development server
@@ -10,6 +10,12 @@ servers:
 tags:
 - description: Health check endpoint
   name: health
+- description: 認証エンドポイント
+  name: auth
+- description: 家族グループ管理
+  name: families
+- description: ユーザー管理
+  name: users
 paths:
   /health:
     get:
@@ -31,6 +37,205 @@ paths:
       summary: Health check
       tags:
       - health
+  /auth/register:
+    post:
+      operationId: postAuthRegister
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          description: 登録成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      summary: ユーザー登録
+      tags:
+      - auth
+  /auth/login:
+    post:
+      operationId: postAuthLogin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+          description: ログイン成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      summary: ログイン
+      tags:
+      - auth
+  /auth/refresh:
+    post:
+      operationId: postAuthRefresh
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RefreshRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+          description: トークン更新成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      summary: アクセストークン更新
+      tags:
+      - auth
+  /auth/logout:
+    delete:
+      operationId: deleteAuthLogout
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogoutRequest"
+        required: true
+      responses:
+        "204":
+          description: ログアウト成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: ログアウト
+      tags:
+      - auth
+  /families:
+    post:
+      operationId: postFamilies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFamilyRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyResponse"
+          description: 家族グループ作成成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 家族グループ作成
+      tags:
+      - families
+  /families/join:
+    post:
+      operationId: postFamiliesJoin
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/JoinFamilyRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FamilyResponse"
+          description: 参加成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 招待コードで家族グループに参加
+      tags:
+      - families
+  /users/me:
+    get:
+      operationId: getUsersMe
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+          description: プロフィール取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 自分のプロフィール取得
+      tags:
+      - users
+    patch:
+      operationId: patchUsersMe
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateProfileRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+          description: 更新成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: プロフィール更新
+      tags:
+      - users
 components:
   responses:
     default:
@@ -40,6 +245,191 @@ components:
             $ref: "#/components/schemas/getHealth_default_response"
       description: Unexpected error
   schemas:
+    RegisterRequest:
+      example:
+        password: password123
+        role: パパ
+        name: 田中太郎
+        email: taro@example.com
+      properties:
+        name:
+          example: 田中太郎
+          type: string
+        email:
+          example: taro@example.com
+          format: email
+          type: string
+        password:
+          example: password123
+          minLength: 8
+          type: string
+        role:
+          example: パパ
+          type: string
+      required:
+      - email
+      - name
+      - password
+      - role
+      type: object
+    LoginRequest:
+      example:
+        password: password
+        email: email
+      properties:
+        email:
+          format: email
+          type: string
+        password:
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    RefreshRequest:
+      example:
+        refresh_token: refresh_token
+      properties:
+        refresh_token:
+          type: string
+      required:
+      - refresh_token
+      type: object
+    LogoutRequest:
+      example:
+        refresh_token: refresh_token
+      properties:
+        refresh_token:
+          type: string
+      required:
+      - refresh_token
+      type: object
+    CreateFamilyRequest:
+      example:
+        name: 田中家
+      properties:
+        name:
+          example: 田中家
+          type: string
+      required:
+      - name
+      type: object
+    JoinFamilyRequest:
+      example:
+        invite_code: ABC123DEF456
+      properties:
+        invite_code:
+          example: ABC123DEF456
+          type: string
+      required:
+      - invite_code
+      type: object
+    UpdateProfileRequest:
+      example:
+        icon_url: https://example.com/icon.png
+        role: パパ
+        name: 田中太郎
+      properties:
+        name:
+          example: 田中太郎
+          type: string
+        role:
+          example: パパ
+          type: string
+        icon_url:
+          example: https://example.com/icon.png
+          type: string
+      type: object
+    AuthResponse:
+      example:
+        access_token: access_token
+        refresh_token: refresh_token
+        user:
+          icon_url: icon_url
+          family_id: 6
+          role: role
+          enman_point: 1
+          name: name
+          created_at: 2000-01-23T04:56:07.000+00:00
+          id: 0
+          email: email
+      properties:
+        user:
+          $ref: "#/components/schemas/UserResponse"
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+      type: object
+    TokenResponse:
+      example:
+        access_token: access_token
+        refresh_token: refresh_token
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+      type: object
+    UserResponse:
+      example:
+        icon_url: icon_url
+        family_id: 6
+        role: role
+        enman_point: 1
+        name: name
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 0
+        email: email
+      properties:
+        id:
+          format: int64
+          type: integer
+        family_id:
+          format: int64
+          nullable: true
+          type: integer
+        name:
+          type: string
+        role:
+          type: string
+        icon_url:
+          nullable: true
+          type: string
+        email:
+          type: string
+        enman_point:
+          type: integer
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    FamilyResponse:
+      example:
+        name: name
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 0
+        invite_code: invite_code
+      properties:
+        id:
+          format: int64
+          type: integer
+        name:
+          type: string
+        invite_code:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    getHealth_200_response:
+      example:
+        status: ok
+      properties:
+        status:
+          example: ok
+          type: string
+      type: object
     getHealth_default_response:
       example:
         errorMessages:
@@ -51,14 +441,6 @@ components:
           items:
             type: string
           type: array
-      type: object
-    getHealth_200_response:
-      example:
-        status: ok
-      properties:
-        status:
-          example: ok
-          type: string
       type: object
   securitySchemes:
     bearerAuth:
