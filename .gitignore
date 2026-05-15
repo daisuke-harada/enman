@@ -1,0 +1,12 @@
+# Root
+.envrc
+
+# Backend
+backend/samconfig.toml
+backend/env.json
+
+# Frontend
+frontend/node_modules/
+frontend/.next/
+frontend/.env.local
+frontend/src/api-client/

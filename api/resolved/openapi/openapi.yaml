@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: My API
+  version: 0.1.0
+servers:
+- description: Development server
+  url: http://localhost:1099
+- description: Production server
+  url: https://your-domain.example.com
+tags:
+- description: Health check endpoint
+  name: health
+paths:
+  /health:
+    get:
+      description: Returns 200 OK if the service is running.
+      operationId: getHealth
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_200_response"
+          description: Service is healthy
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      summary: Health check
+      tags:
+      - health
+components:
+  responses:
+    default:
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/getHealth_default_response"
+      description: Unexpected error
+  schemas:
+    getHealth_default_response:
+      example:
+        errorMessages:
+        - something went wrong
+      properties:
+        errorMessages:
+          example:
+          - something went wrong
+          items:
+            type: string
+          type: array
+      type: object
+    getHealth_200_response:
+      example:
+        status: ok
+      properties:
+        status:
+          example: ok
+          type: string
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http

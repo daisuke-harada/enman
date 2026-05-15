@@ -1,0 +1,19 @@
+get:
+  summary: Health check
+  description: Returns 200 OK if the service is running.
+  operationId: getHealth
+  tags:
+    - health
+  responses:
+    "200":
+      description: Service is healthy
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: string
+                example: ok
+    default:
+      $ref: "../components/schemas/response/default.yaml"

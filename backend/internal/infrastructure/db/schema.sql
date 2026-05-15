@@ -1,0 +1,9 @@
+-- テンプレート初期状態: テーブル定義はここに追加してください
+-- 例:
+-- CREATE TABLE users (
+--   id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+--   name VARCHAR(255) NOT NULL,
+--   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--   PRIMARY KEY (id)
+-- );

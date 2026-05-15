@@ -1,0 +1,12 @@
+description: Unexpected error
+content:
+  application/json:
+    schema:
+      type: object
+      properties:
+        errorMessages:
+          type: array
+          items:
+            type: string
+          example:
+            - "something went wrong"
