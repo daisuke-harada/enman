@@ -13,7 +13,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/your-org/app/internal/interface/openapi"
+	"github.com/daisuke-harada/enman/internal/interface/openapi"
 )
 
 var re *regexp.Regexp = regexp.MustCompile("([a-z0-9])([A-Z])")

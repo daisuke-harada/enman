@@ -3,8 +3,8 @@ package di
 import (
 	"context"
 
-	"github.com/your-org/app/internal/config"
-	"github.com/your-org/app/internal/infrastructure/db"
+	"github.com/daisuke-harada/enman/internal/config"
+	"github.com/daisuke-harada/enman/internal/infrastructure/db"
 	"gorm.io/gorm"
 )
 

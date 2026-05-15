@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/your-org/app/internal/di"
+	"github.com/daisuke-harada/enman/internal/di"
 )
 
 // NewHandler は DI コンテナから各ハンドラーを初期化して Handler を返します。

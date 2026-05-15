@@ -1,4 +1,4 @@
-module github.com/your-org/app
+module github.com/daisuke-harada/enman
 
 go 1.26.2
 

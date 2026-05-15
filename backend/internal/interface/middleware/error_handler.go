@@ -5,7 +5,7 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/your-org/app/internal/apperror"
+	"github.com/daisuke-harada/enman/internal/apperror"
 	"github.com/labstack/echo/v4"
 )
 

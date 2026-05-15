@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/your-org/app/internal/config"
+	"github.com/daisuke-harada/enman/internal/config"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )

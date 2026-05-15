@@ -3,9 +3,9 @@ package middleware
 import (
 	"strings"
 
-	"github.com/your-org/app/internal/apperror"
-	iface_openapi "github.com/your-org/app/internal/interface/openapi"
-	jwtpkg "github.com/your-org/app/internal/pkg/jwt"
+	"github.com/daisuke-harada/enman/internal/apperror"
+	iface_openapi "github.com/daisuke-harada/enman/internal/interface/openapi"
+	jwtpkg "github.com/daisuke-harada/enman/internal/pkg/jwt"
 	"github.com/labstack/echo/v4"
 )
 

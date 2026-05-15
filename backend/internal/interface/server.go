@@ -12,11 +12,11 @@ import (
 
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
-	"github.com/your-org/app/internal/config"
-	"github.com/your-org/app/internal/di"
-	"github.com/your-org/app/internal/interface/handler"
-	"github.com/your-org/app/internal/interface/middleware"
-	"github.com/your-org/app/internal/interface/openapi"
+	"github.com/daisuke-harada/enman/internal/config"
+	"github.com/daisuke-harada/enman/internal/di"
+	"github.com/daisuke-harada/enman/internal/interface/handler"
+	"github.com/daisuke-harada/enman/internal/interface/middleware"
+	"github.com/daisuke-harada/enman/internal/interface/openapi"
 )
 
 // NewEchoApp はDIコンテナを構築し、全ルートが登録済みの *echo.Echo を返します。

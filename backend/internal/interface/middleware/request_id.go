@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/your-org/app/pkg/logger"
+	"github.com/daisuke-harada/enman/pkg/logger"
 	"github.com/labstack/echo/v4"
 )
 

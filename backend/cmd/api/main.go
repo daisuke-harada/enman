@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"os"
 
-	iface "github.com/your-org/app/internal/interface"
-	"github.com/your-org/app/pkg/logger"
+	iface "github.com/daisuke-harada/enman/internal/interface"
+	"github.com/daisuke-harada/enman/pkg/logger"
 )
 
 func main() {

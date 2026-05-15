@@ -4,7 +4,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/your-org/app/internal/apperror"
+	"github.com/daisuke-harada/enman/internal/apperror"
 	"github.com/golang-jwt/jwt/v5"
 )
 

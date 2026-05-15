@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	jwtpkg "github.com/your-org/app/internal/pkg/jwt"
+	jwtpkg "github.com/daisuke-harada/enman/internal/pkg/jwt"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

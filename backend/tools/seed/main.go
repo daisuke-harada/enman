@@ -6,9 +6,9 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/your-org/app/internal/config"
-	"github.com/your-org/app/internal/infrastructure/db"
-	"github.com/your-org/app/pkg/logger"
+	"github.com/daisuke-harada/enman/internal/config"
+	"github.com/daisuke-harada/enman/internal/infrastructure/db"
+	"github.com/daisuke-harada/enman/pkg/logger"
 )
 
 func main() {
