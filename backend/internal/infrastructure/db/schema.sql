@@ -34,3 +34,28 @@ CREATE TABLE refresh_tokens (
   UNIQUE KEY uq_refresh_tokens_token_hash (token_hash),
   CONSTRAINT fk_refresh_tokens_user_id FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
+
+CREATE TABLE task_templates (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  category VARCHAR(100) NOT NULL,
+  PRIMARY KEY (id)
+);
+
+CREATE TABLE tasks (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  family_id BIGINT UNSIGNED NOT NULL,
+  created_by BIGINT UNSIGNED NOT NULL,
+  done_by BIGINT UNSIGNED,
+  title VARCHAR(255) NOT NULL,
+  category VARCHAR(100),
+  status VARCHAR(20) NOT NULL DEFAULT 'pending',
+  done_at DATETIME,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_tasks_family_status (family_id, status),
+  CONSTRAINT fk_tasks_family_id FOREIGN KEY (family_id) REFERENCES families (id),
+  CONSTRAINT fk_tasks_created_by FOREIGN KEY (created_by) REFERENCES users (id),
+  CONSTRAINT fk_tasks_done_by FOREIGN KEY (done_by) REFERENCES users (id)
+);

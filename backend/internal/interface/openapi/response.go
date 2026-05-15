@@ -5,6 +5,7 @@ import (
 	"github.com/daisuke-harada/enman/internal/usecase"
 )
 
+
 func NewUserResponse(user *model.User) UserResponse {
 	id := int64(user.ID)
 	resp := UserResponse{
@@ -55,5 +56,36 @@ func NewTokenResponse(out *usecase.RefreshAccessTokenOutput) TokenResponse {
 	return TokenResponse{
 		AccessToken:  &out.AccessToken,
 		RefreshToken: &out.RefreshToken,
+	}
+}
+
+func NewTaskResponse(task *model.Task) TaskResponse {
+	id := int64(task.ID)
+	familyID := int64(task.FamilyID)
+	createdBy := int64(task.CreatedBy)
+	status := TaskResponseStatus(task.Status)
+	resp := TaskResponse{
+		Id:        &id,
+		FamilyId:  &familyID,
+		CreatedBy: &createdBy,
+		Title:     &task.Title,
+		Category:  task.Category,
+		Status:    &status,
+		DoneAt:    task.DoneAt,
+		CreatedAt: &task.CreatedAt,
+	}
+	if task.DoneBy != nil {
+		doneBy := int64(*task.DoneBy)
+		resp.DoneBy = &doneBy
+	}
+	return resp
+}
+
+func NewTaskTemplateResponse(tmpl *model.TaskTemplate) TaskTemplateResponse {
+	id := int64(tmpl.ID)
+	return TaskTemplateResponse{
+		Id:       &id,
+		Name:     &tmpl.Name,
+		Category: &tmpl.Category,
 	}
 }

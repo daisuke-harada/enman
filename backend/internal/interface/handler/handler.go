@@ -32,6 +32,18 @@ func NewHandler(container *di.Container) *Handler {
 		PatchUsersMeHandler: PatchUsersMeHandler{
 			InputPort: di.MustInvoke[usecase.UpdateProfileInputPort](container),
 		},
+		GetTasksHandler: GetTasksHandler{
+			InputPort: di.MustInvoke[usecase.ListTasksInputPort](container),
+		},
+		PostTasksHandler: PostTasksHandler{
+			InputPort: di.MustInvoke[usecase.CreateTaskInputPort](container),
+		},
+		PatchTasksDoneHandler: PatchTasksDoneHandler{
+			InputPort: di.MustInvoke[usecase.CompleteTaskInputPort](container),
+		},
+		GetTaskTemplatesHandler: GetTaskTemplatesHandler{
+			InputPort: di.MustInvoke[usecase.ListTaskTemplatesInputPort](container),
+		},
 		GetHealthHandler: GetHealthHandler{},
 	}
 }

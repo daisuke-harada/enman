@@ -16,6 +16,10 @@ tags:
     description: 家族グループ管理
   - name: users
     description: ユーザー管理
+  - name: tasks
+    description: 家事（タスク）管理
+  - name: task-templates
+    description: 家事テンプレート
 paths:
   /health:
     $ref: "./paths/health.yaml"
@@ -145,6 +149,98 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FamilyResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+  /tasks:
+    get:
+      summary: タスク一覧取得
+      operationId: getTasks
+      tags:
+        - tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: "pending: これからやること / today_done: 今日終わったこと"
+          schema:
+            type: string
+            enum: [pending, today_done]
+      responses:
+        "200":
+          description: タスク一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+    post:
+      summary: タスク作成
+      operationId: postTasks
+      tags:
+        - tasks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+      responses:
+        "201":
+          description: タスク作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+  /tasks/{taskId}/done:
+    patch:
+      summary: タスク完了報告
+      operationId: patchTasksDone
+      tags:
+        - tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: 完了報告成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+  /task-templates:
+    get:
+      summary: 家事テンプレート一覧取得
+      operationId: getTaskTemplates
+      tags:
+        - task-templates
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: テンプレート一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TaskTemplateResponse"
         default:
           $ref: "./components/schemas/response/default.yaml"
   /users/me:
@@ -308,6 +404,58 @@ components:
         created_at:
           type: string
           format: date-time
+    CreateTaskRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "皿洗い"
+        category:
+          type: string
+          example: "キッチン"
+    TaskResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        family_id:
+          type: integer
+          format: int64
+        created_by:
+          type: integer
+          format: int64
+        done_by:
+          type: integer
+          format: int64
+          nullable: true
+        title:
+          type: string
+        category:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, done]
+        done_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    TaskTemplateResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        category:
+          type: string
     FamilyResponse:
       type: object
       properties:

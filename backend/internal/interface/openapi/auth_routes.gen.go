@@ -9,6 +9,10 @@ var bearerAuthRoutes = map[string]struct{}{
 	"DELETE /auth/logout": {},
 	"POST /families": {},
 	"POST /families/join": {},
+	"GET /task-templates": {},
+	"GET /tasks": {},
+	"POST /tasks": {},
+	"PATCH /tasks/:taskId/done": {},
 	"GET /users/me": {},
 	"PATCH /users/me": {},
 }

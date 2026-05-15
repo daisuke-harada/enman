@@ -16,6 +16,10 @@ tags:
   name: families
 - description: ユーザー管理
   name: users
+- description: 家事（タスク）管理
+  name: tasks
+- description: 家事テンプレート
+  name: task-templates
 paths:
   /health:
     get:
@@ -189,6 +193,120 @@ paths:
       summary: 招待コードで家族グループに参加
       tags:
       - families
+  /tasks:
+    get:
+      operationId: getTasks
+      parameters:
+      - description: "pending: これからやること / today_done: 今日終わったこと"
+        explode: true
+        in: query
+        name: status
+        required: false
+        schema:
+          enum:
+          - pending
+          - today_done
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/TaskResponse"
+                type: array
+          description: タスク一覧取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスク一覧取得
+      tags:
+      - tasks
+    post:
+      operationId: postTasks
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+          description: タスク作成成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスク作成
+      tags:
+      - tasks
+  /tasks/{taskId}/done:
+    patch:
+      operationId: patchTasksDone
+      parameters:
+      - explode: false
+        in: path
+        name: taskId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+          description: 完了報告成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスク完了報告
+      tags:
+      - tasks
+  /task-templates:
+    get:
+      operationId: getTaskTemplates
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/TaskTemplateResponse"
+                type: array
+          description: テンプレート一覧取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 家事テンプレート一覧取得
+      tags:
+      - task-templates
   /users/me:
     get:
       operationId: getUsersMe
@@ -402,6 +520,77 @@ components:
           type: integer
         created_at:
           format: date-time
+          type: string
+      type: object
+    CreateTaskRequest:
+      example:
+        title: 皿洗い
+        category: キッチン
+      properties:
+        title:
+          example: 皿洗い
+          type: string
+        category:
+          example: キッチン
+          type: string
+      required:
+      - title
+      type: object
+    TaskResponse:
+      example:
+        family_id: 6
+        done_by: 5
+        done_at: 2000-01-23T04:56:07.000+00:00
+        created_at: 2000-01-23T04:56:07.000+00:00
+        id: 0
+        title: title
+        category: category
+        created_by: 1
+        status: pending
+      properties:
+        id:
+          format: int64
+          type: integer
+        family_id:
+          format: int64
+          type: integer
+        created_by:
+          format: int64
+          type: integer
+        done_by:
+          format: int64
+          nullable: true
+          type: integer
+        title:
+          type: string
+        category:
+          nullable: true
+          type: string
+        status:
+          enum:
+          - pending
+          - done
+          type: string
+        done_at:
+          format: date-time
+          nullable: true
+          type: string
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    TaskTemplateResponse:
+      example:
+        name: name
+        id: 0
+        category: category
+      properties:
+        id:
+          format: int64
+          type: integer
+        name:
+          type: string
+        category:
           type: string
       type: object
     FamilyResponse:

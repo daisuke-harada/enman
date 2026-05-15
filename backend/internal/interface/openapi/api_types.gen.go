@@ -13,6 +13,42 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "bearerAuth.Scopes"
 )
 
+// Defines values for TaskResponseStatus.
+const (
+	TaskResponseStatusDone    TaskResponseStatus = "done"
+	TaskResponseStatusPending TaskResponseStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the TaskResponseStatus enum.
+func (e TaskResponseStatus) Valid() bool {
+	switch e {
+	case TaskResponseStatusDone:
+		return true
+	case TaskResponseStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for GetTasksParamsStatus.
+const (
+	GetTasksParamsStatusPending   GetTasksParamsStatus = "pending"
+	GetTasksParamsStatusTodayDone GetTasksParamsStatus = "today_done"
+)
+
+// Valid indicates whether the value is a known member of the GetTasksParamsStatus enum.
+func (e GetTasksParamsStatus) Valid() bool {
+	switch e {
+	case GetTasksParamsStatusPending:
+		return true
+	case GetTasksParamsStatusTodayDone:
+		return true
+	default:
+		return false
+	}
+}
+
 // AuthResponse defines model for AuthResponse.
 type AuthResponse struct {
 	AccessToken  *string       `json:"access_token,omitempty"`
@@ -23,6 +59,12 @@ type AuthResponse struct {
 // CreateFamilyRequest defines model for CreateFamilyRequest.
 type CreateFamilyRequest struct {
 	Name string `json:"name"`
+}
+
+// CreateTaskRequest defines model for CreateTaskRequest.
+type CreateTaskRequest struct {
+	Category *string `json:"category,omitempty"`
+	Title    string  `json:"title"`
 }
 
 // FamilyResponse defines model for FamilyResponse.
@@ -60,6 +102,29 @@ type RegisterRequest struct {
 	Name     string              `json:"name"`
 	Password string              `json:"password"`
 	Role     string              `json:"role"`
+}
+
+// TaskResponse defines model for TaskResponse.
+type TaskResponse struct {
+	Category  *string             `json:"category,omitempty"`
+	CreatedAt *time.Time          `json:"created_at,omitempty"`
+	CreatedBy *int64              `json:"created_by,omitempty"`
+	DoneAt    *time.Time          `json:"done_at,omitempty"`
+	DoneBy    *int64              `json:"done_by,omitempty"`
+	FamilyId  *int64              `json:"family_id,omitempty"`
+	Id        *int64              `json:"id,omitempty"`
+	Status    *TaskResponseStatus `json:"status,omitempty"`
+	Title     *string             `json:"title,omitempty"`
+}
+
+// TaskResponseStatus defines model for TaskResponse.Status.
+type TaskResponseStatus string
+
+// TaskTemplateResponse defines model for TaskTemplateResponse.
+type TaskTemplateResponse struct {
+	Category *string `json:"category,omitempty"`
+	Id       *int64  `json:"id,omitempty"`
+	Name     *string `json:"name,omitempty"`
 }
 
 // TokenResponse defines model for TokenResponse.
@@ -100,6 +165,15 @@ type GetHealthDefaultResponse struct {
 // bearerAuthContextKey is the context key for bearerAuth security scheme
 type bearerAuthContextKey string
 
+// GetTasksParams defines parameters for GetTasks.
+type GetTasksParams struct {
+	// Status pending: これからやること / today_done: 今日終わったこと
+	Status *GetTasksParamsStatus `form:"status,omitempty" json:"status,omitempty"`
+}
+
+// GetTasksParamsStatus defines parameters for GetTasks.
+type GetTasksParamsStatus string
+
 // PostAuthLoginJSONRequestBody defines body for PostAuthLogin for application/json ContentType.
 type PostAuthLoginJSONRequestBody = LoginRequest
 
@@ -117,6 +191,9 @@ type PostFamiliesJSONRequestBody = CreateFamilyRequest
 
 // PostFamiliesJoinJSONRequestBody defines body for PostFamiliesJoin for application/json ContentType.
 type PostFamiliesJoinJSONRequestBody = JoinFamilyRequest
+
+// PostTasksJSONRequestBody defines body for PostTasks for application/json ContentType.
+type PostTasksJSONRequestBody = CreateTaskRequest
 
 // PatchUsersMeJSONRequestBody defines body for PatchUsersMe for application/json ContentType.
 type PatchUsersMeJSONRequestBody = UpdateProfileRequest

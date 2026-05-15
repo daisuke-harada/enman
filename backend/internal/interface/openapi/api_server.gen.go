@@ -4,7 +4,11 @@
 package openapi
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 )
 
 // ServerInterface represents all server handlers.
@@ -30,6 +34,18 @@ type ServerInterface interface {
 	// Health check
 	// (GET /health)
 	GetHealth(ctx echo.Context) error
+	// 家事テンプレート一覧取得
+	// (GET /task-templates)
+	GetTaskTemplates(ctx echo.Context) error
+	// タスク一覧取得
+	// (GET /tasks)
+	GetTasks(ctx echo.Context, params GetTasksParams) error
+	// タスク作成
+	// (POST /tasks)
+	PostTasks(ctx echo.Context) error
+	// タスク完了報告
+	// (PATCH /tasks/{taskId}/done)
+	PatchTasksDone(ctx echo.Context, taskId int64) error
 	// 自分のプロフィール取得
 	// (GET /users/me)
 	GetUsersMe(ctx echo.Context) error
@@ -112,6 +128,66 @@ func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 	return err
 }
 
+// GetTaskTemplates converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTaskTemplates(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetTaskTemplates(ctx)
+	return err
+}
+
+// GetTasks converts echo context to params.
+func (w *ServerInterfaceWrapper) GetTasks(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTasksParams
+	// ------------- Optional query parameter "status" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, false, "status", ctx.QueryParams(), &params.Status, runtime.BindQueryParameterOptions{Type: "string", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter status: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetTasks(ctx, params)
+	return err
+}
+
+// PostTasks converts echo context to params.
+func (w *ServerInterfaceWrapper) PostTasks(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostTasks(ctx)
+	return err
+}
+
+// PatchTasksDone converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchTasksDone(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "taskId" -------------
+	var taskId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "taskId", ctx.Param("taskId"), &taskId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter taskId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchTasksDone(ctx, taskId)
+	return err
+}
+
 // GetUsersMe converts echo context to params.
 func (w *ServerInterfaceWrapper) GetUsersMe(ctx echo.Context) error {
 	var err error
@@ -188,6 +264,10 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.POST(options.BaseURL+"/families", wrapper.PostFamilies, options.OperationMiddlewares["postFamilies"]...)
 	router.POST(options.BaseURL+"/families/join", wrapper.PostFamiliesJoin, options.OperationMiddlewares["postFamiliesJoin"]...)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth, options.OperationMiddlewares["getHealth"]...)
+	router.GET(options.BaseURL+"/task-templates", wrapper.GetTaskTemplates, options.OperationMiddlewares["getTaskTemplates"]...)
+	router.GET(options.BaseURL+"/tasks", wrapper.GetTasks, options.OperationMiddlewares["getTasks"]...)
+	router.POST(options.BaseURL+"/tasks", wrapper.PostTasks, options.OperationMiddlewares["postTasks"]...)
+	router.PATCH(options.BaseURL+"/tasks/:taskId/done", wrapper.PatchTasksDone, options.OperationMiddlewares["patchTasksDone"]...)
 	router.GET(options.BaseURL+"/users/me", wrapper.GetUsersMe, options.OperationMiddlewares["getUsersMe"]...)
 	router.PATCH(options.BaseURL+"/users/me", wrapper.PatchUsersMe, options.OperationMiddlewares["patchUsersMe"]...)
 
