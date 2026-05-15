@@ -6,32 +6,97 @@ import { AuthGuard } from '@/components/AuthGuard';
 import { BottomNav } from '@/components/BottomNav';
 import { useTasks, useCompleteTask } from '@/hooks/useTasks';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useSendAppreciation } from '@/hooks/useAppreciations';
 import type { TaskResponse } from '@/api-client/types.gen';
 
 type Filter = 'pending' | 'today_done';
 
-function TaskCard({ task, onComplete }: { task: TaskResponse; onComplete: (id: number) => void }) {
-  const isPending = task.status === 'pending';
+const STAMPS: { type: 'great' | 'thanks' | 'cute' | 'love' | 'star'; emoji: string; label: string }[] = [
+  { type: 'great', emoji: '👏', label: 'すごい！' },
+  { type: 'thanks', emoji: '🙏', label: 'ありがとう' },
+  { type: 'cute', emoji: '💕', label: 'かわいい' },
+  { type: 'love', emoji: '❤️', label: '大好き' },
+  { type: 'star', emoji: '⭐', label: '最高' },
+];
+
+function StampPicker({ taskId, currentUserId, doneBy, onSent }: {
+  taskId: number;
+  currentUserId: number;
+  doneBy?: number | null;
+  onSent: () => void;
+}) {
+  const sendAppreciation = useSendAppreciation();
+  const [sent, setSent] = useState<string | null>(null);
+
+  if (!doneBy || doneBy === currentUserId) return null;
+
+  const handleStamp = async (type: 'great' | 'thanks' | 'cute' | 'love' | 'star') => {
+    if (sent) return;
+    await sendAppreciation.mutateAsync({ taskId, body: { stamp_type: type } });
+    setSent(type);
+    onSent();
+  };
+
+  if (sent) {
+    const stamp = STAMPS.find((s) => s.type === sent);
+    return <p className="text-xs text-green-600 mt-2 pl-11">{stamp?.emoji} 送りました！</p>;
+  }
+
   return (
-    <div className="bg-white rounded-2xl px-4 py-3 flex items-center gap-3 shadow-sm border border-gray-100">
-      <button
-        onClick={() => isPending && task.id && onComplete(task.id)}
-        className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
-          isPending
-            ? 'border-gray-300 hover:border-green-400 hover:bg-green-50'
-            : 'border-green-500 bg-green-500'
-        }`}
-      >
-        {!isPending && <span className="text-white text-xs font-bold">✓</span>}
-      </button>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-medium truncate ${!isPending ? 'line-through text-gray-400' : 'text-gray-800'}`}>
-          {task.title}
-        </p>
-        {task.category && (
-          <p className="text-xs text-gray-400 mt-0.5">{task.category}</p>
-        )}
+    <div className="flex gap-1 mt-2 pl-11 flex-wrap">
+      {STAMPS.map((s) => (
+        <button
+          key={s.type}
+          onClick={() => handleStamp(s.type)}
+          disabled={sendAppreciation.isPending}
+          title={s.label}
+          className="text-lg hover:scale-125 transition-transform disabled:opacity-50"
+        >
+          {s.emoji}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function TaskCard({ task, currentUserId, onComplete }: {
+  task: TaskResponse;
+  currentUserId: number;
+  onComplete: (id: number) => void;
+}) {
+  const [stampSent, setStampSent] = useState(false);
+  const isPending = task.status === 'pending';
+
+  return (
+    <div className="bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-100">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => isPending && task.id && onComplete(task.id)}
+          className={`w-8 h-8 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors ${
+            isPending
+              ? 'border-gray-300 hover:border-green-400 hover:bg-green-50'
+              : 'border-green-500 bg-green-500'
+          }`}
+        >
+          {!isPending && <span className="text-white text-xs font-bold">✓</span>}
+        </button>
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-medium truncate ${!isPending ? 'line-through text-gray-400' : 'text-gray-800'}`}>
+            {task.title}
+          </p>
+          {task.category && (
+            <p className="text-xs text-gray-400 mt-0.5">{task.category}</p>
+          )}
+        </div>
       </div>
+      {!isPending && !stampSent && task.id && (
+        <StampPicker
+          taskId={task.id}
+          currentUserId={currentUserId}
+          doneBy={task.done_by}
+          onSent={() => setStampSent(true)}
+        />
+      )}
     </div>
   );
 }
@@ -96,7 +161,12 @@ export default function HomePage() {
 
           <div className="space-y-2">
             {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} onComplete={handleComplete} />
+              <TaskCard
+                key={task.id}
+                task={task}
+                currentUserId={user?.id ?? 0}
+                onComplete={handleComplete}
+              />
             ))}
           </div>
         </div>
