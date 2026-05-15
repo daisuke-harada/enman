@@ -4,6 +4,7 @@ package handler
 type Handler struct {
 	DeleteAuthLogoutHandler
 	GetHealthHandler
+	GetNotificationsHandler
 	GetTaskTemplatesHandler
 	GetTasksHandler
 	GetUsersMeHandler
@@ -15,4 +16,5 @@ type Handler struct {
 	PostFamiliesHandler
 	PostFamiliesJoinHandler
 	PostTasksHandler
+	PostTasksAppreciationHandler
 }

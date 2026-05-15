@@ -34,6 +34,9 @@ type ServerInterface interface {
 	// Health check
 	// (GET /health)
 	GetHealth(ctx echo.Context) error
+	// 通知一覧取得（自分宛の感謝）
+	// (GET /notifications)
+	GetNotifications(ctx echo.Context) error
 	// 家事テンプレート一覧取得
 	// (GET /task-templates)
 	GetTaskTemplates(ctx echo.Context) error
@@ -43,6 +46,9 @@ type ServerInterface interface {
 	// タスク作成
 	// (POST /tasks)
 	PostTasks(ctx echo.Context) error
+	// ありがとうスタンプ送信
+	// (POST /tasks/{taskId}/appreciations)
+	PostTasksAppreciation(ctx echo.Context, taskId int64) error
 	// タスク完了報告
 	// (PATCH /tasks/{taskId}/done)
 	PatchTasksDone(ctx echo.Context, taskId int64) error
@@ -128,6 +134,17 @@ func (w *ServerInterfaceWrapper) GetHealth(ctx echo.Context) error {
 	return err
 }
 
+// GetNotifications converts echo context to params.
+func (w *ServerInterfaceWrapper) GetNotifications(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetNotifications(ctx)
+	return err
+}
+
 // GetTaskTemplates converts echo context to params.
 func (w *ServerInterfaceWrapper) GetTaskTemplates(ctx echo.Context) error {
 	var err error
@@ -167,6 +184,24 @@ func (w *ServerInterfaceWrapper) PostTasks(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostTasks(ctx)
+	return err
+}
+
+// PostTasksAppreciation converts echo context to params.
+func (w *ServerInterfaceWrapper) PostTasksAppreciation(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "taskId" -------------
+	var taskId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "taskId", ctx.Param("taskId"), &taskId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter taskId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostTasksAppreciation(ctx, taskId)
 	return err
 }
 
@@ -264,9 +299,11 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.POST(options.BaseURL+"/families", wrapper.PostFamilies, options.OperationMiddlewares["postFamilies"]...)
 	router.POST(options.BaseURL+"/families/join", wrapper.PostFamiliesJoin, options.OperationMiddlewares["postFamiliesJoin"]...)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth, options.OperationMiddlewares["getHealth"]...)
+	router.GET(options.BaseURL+"/notifications", wrapper.GetNotifications, options.OperationMiddlewares["getNotifications"]...)
 	router.GET(options.BaseURL+"/task-templates", wrapper.GetTaskTemplates, options.OperationMiddlewares["getTaskTemplates"]...)
 	router.GET(options.BaseURL+"/tasks", wrapper.GetTasks, options.OperationMiddlewares["getTasks"]...)
 	router.POST(options.BaseURL+"/tasks", wrapper.PostTasks, options.OperationMiddlewares["postTasks"]...)
+	router.POST(options.BaseURL+"/tasks/:taskId/appreciations", wrapper.PostTasksAppreciation, options.OperationMiddlewares["postTasksAppreciation"]...)
 	router.PATCH(options.BaseURL+"/tasks/:taskId/done", wrapper.PatchTasksDone, options.OperationMiddlewares["patchTasksDone"]...)
 	router.GET(options.BaseURL+"/users/me", wrapper.GetUsersMe, options.OperationMiddlewares["getUsersMe"]...)
 	router.PATCH(options.BaseURL+"/users/me", wrapper.PatchUsersMe, options.OperationMiddlewares["patchUsersMe"]...)

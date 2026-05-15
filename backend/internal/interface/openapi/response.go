@@ -89,3 +89,28 @@ func NewTaskTemplateResponse(tmpl *model.TaskTemplate) TaskTemplateResponse {
 		Category: &tmpl.Category,
 	}
 }
+
+func NewAppreciationResponse(a *model.Appreciation) AppreciationResponse {
+	id := int64(a.ID)
+	taskID := int64(a.TaskID)
+	fromUserID := int64(a.FromUserID)
+	toUserID := int64(a.ToUserID)
+	stampType := AppreciationResponseStampType(a.StampType)
+
+	resp := AppreciationResponse{
+		Id:          &id,
+		TaskId:      &taskID,
+		FromUserId:  &fromUserID,
+		ToUserId:    &toUserID,
+		StampType:   &stampType,
+		Message:     a.Message,
+		CreatedAt:   &a.CreatedAt,
+	}
+	if a.Task != nil {
+		resp.TaskTitle = &a.Task.Title
+	}
+	if a.FromUser != nil {
+		resp.FromUserName = &a.FromUser.Name
+	}
+	return resp
+}

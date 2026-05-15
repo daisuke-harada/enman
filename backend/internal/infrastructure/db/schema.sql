@@ -59,3 +59,19 @@ CREATE TABLE tasks (
   CONSTRAINT fk_tasks_created_by FOREIGN KEY (created_by) REFERENCES users (id),
   CONSTRAINT fk_tasks_done_by FOREIGN KEY (done_by) REFERENCES users (id)
 );
+
+CREATE TABLE appreciations (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  task_id BIGINT UNSIGNED NOT NULL,
+  from_user_id BIGINT UNSIGNED NOT NULL,
+  to_user_id BIGINT UNSIGNED NOT NULL,
+  stamp_type VARCHAR(20) NOT NULL,
+  message VARCHAR(255),
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_appreciations_to_user (to_user_id),
+  INDEX idx_appreciations_task (task_id),
+  CONSTRAINT fk_appreciations_task FOREIGN KEY (task_id) REFERENCES tasks (id),
+  CONSTRAINT fk_appreciations_from_user FOREIGN KEY (from_user_id) REFERENCES users (id),
+  CONSTRAINT fk_appreciations_to_user FOREIGN KEY (to_user_id) REFERENCES users (id)
+);

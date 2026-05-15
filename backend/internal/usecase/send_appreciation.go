@@ -1,0 +1,126 @@
+package usecase
+
+import (
+	"context"
+	"strings"
+
+	"github.com/daisuke-harada/enman/internal/apperror"
+	"github.com/daisuke-harada/enman/internal/domain/model"
+	"github.com/daisuke-harada/enman/internal/domain/repository"
+)
+
+const (
+	PointSendAppreciation    = 1
+	PointReceiveAppreciation = 3
+)
+
+type SendAppreciationInputPort interface {
+	Execute(ctx context.Context, input SendAppreciationInput) (*SendAppreciationOutput, error)
+}
+
+type SendAppreciationInput struct {
+	TaskID        uint
+	FromUserID    uint
+	StampType     string
+	Message       *string
+}
+
+func (i *SendAppreciationInput) Validate() error {
+	var errs []string
+
+	validStamps := map[string]bool{"great": true, "thanks": true, "cute": true, "love": true, "star": true}
+	if !validStamps[i.StampType] {
+		errs = append(errs, "無効なスタンプタイプです")
+	}
+
+	if i.Message != nil && len(strings.TrimSpace(*i.Message)) > 255 {
+		errs = append(errs, "メッセージは255文字以内で入力してください")
+	}
+
+	if len(errs) > 0 {
+		return apperror.UnprocessableEntity(errs...)
+	}
+	return nil
+}
+
+type SendAppreciationOutput struct {
+	Appreciation *model.Appreciation
+}
+
+type SendAppreciationInteractor struct {
+	AppreciationRepo repository.AppreciationRepository
+	TaskRepo         repository.TaskRepository
+	UserRepo         repository.UserRepository
+}
+
+func NewSendAppreciationInteractor(
+	appreciationRepo repository.AppreciationRepository,
+	taskRepo repository.TaskRepository,
+	userRepo repository.UserRepository,
+) *SendAppreciationInteractor {
+	return &SendAppreciationInteractor{
+		AppreciationRepo: appreciationRepo,
+		TaskRepo:         taskRepo,
+		UserRepo:         userRepo,
+	}
+}
+
+func (i *SendAppreciationInteractor) Execute(ctx context.Context, input SendAppreciationInput) (*SendAppreciationOutput, error) {
+	if err := input.Validate(); err != nil {
+		return nil, err
+	}
+
+	fromUser, err := i.UserRepo.FindByID(ctx, input.FromUserID)
+	if err != nil || fromUser.FamilyID == nil {
+		return nil, apperror.Forbidden("家族グループに参加していません")
+	}
+
+	task, err := i.TaskRepo.FindByID(ctx, input.TaskID)
+	if err != nil {
+		return nil, apperror.NotFound("タスクが見つかりません")
+	}
+
+	if task.FamilyID != *fromUser.FamilyID {
+		return nil, apperror.Forbidden("このタスクにアクセスする権限がありません")
+	}
+
+	if task.Status != model.TaskStatusDone || task.DoneBy == nil {
+		return nil, apperror.UnprocessableEntity("完了済みのタスクにのみスタンプを送れます")
+	}
+
+	if *task.DoneBy == input.FromUserID {
+		return nil, apperror.UnprocessableEntity("自分が完了したタスクにはスタンプを送れません")
+	}
+
+	appreciation := &model.Appreciation{
+		TaskID:     input.TaskID,
+		FromUserID: input.FromUserID,
+		ToUserID:   *task.DoneBy,
+		StampType:  model.StampType(input.StampType),
+		Message:    input.Message,
+	}
+
+	if err := i.AppreciationRepo.Create(ctx, appreciation); err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	// ポイント付与
+	fromUser.EnmanPoint += PointSendAppreciation
+	if err := i.UserRepo.Update(ctx, fromUser); err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	toUser, err := i.UserRepo.FindByID(ctx, *task.DoneBy)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	toUser.EnmanPoint += PointReceiveAppreciation
+	if err := i.UserRepo.Update(ctx, toUser); err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
+	appreciation.Task = task
+	appreciation.FromUser = fromUser
+
+	return &SendAppreciationOutput{Appreciation: appreciation}, nil
+}

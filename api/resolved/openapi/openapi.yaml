@@ -20,6 +20,10 @@ tags:
   name: tasks
 - description: 家事テンプレート
   name: task-templates
+- description: 感謝スタンプ管理
+  name: appreciations
+- description: 通知センター
+  name: notifications
 paths:
   /health:
     get:
@@ -307,6 +311,65 @@ paths:
       summary: 家事テンプレート一覧取得
       tags:
       - task-templates
+  /tasks/{taskId}/appreciations:
+    post:
+      operationId: postTasksAppreciation
+      parameters:
+      - explode: false
+        in: path
+        name: taskId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendAppreciationRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppreciationResponse"
+          description: スタンプ送信成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: ありがとうスタンプ送信
+      tags:
+      - appreciations
+  /notifications:
+    get:
+      operationId: getNotifications
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AppreciationResponse"
+                type: array
+          description: 通知一覧取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 通知一覧取得（自分宛の感謝）
+      tags:
+      - notifications
   /users/me:
     get:
       operationId: getUsersMe
@@ -606,6 +669,71 @@ components:
         name:
           type: string
         invite_code:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    SendAppreciationRequest:
+      example:
+        message: ピカピカだね！
+        stamp_type: great
+      properties:
+        stamp_type:
+          description: "great: すごい！ / thanks: ありがとう / cute: かわいい / love: 大好き / star:\
+            \ 最高"
+          enum:
+          - great
+          - thanks
+          - cute
+          - love
+          - star
+          type: string
+        message:
+          example: ピカピカだね！
+          maxLength: 255
+          type: string
+      required:
+      - stamp_type
+      type: object
+    AppreciationResponse:
+      example:
+        from_user_name: from_user_name
+        to_user_id: 5
+        task_title: task_title
+        created_at: 2000-01-23T04:56:07.000+00:00
+        task_id: 6
+        id: 0
+        message: message
+        from_user_id: 1
+        stamp_type: great
+      properties:
+        id:
+          format: int64
+          type: integer
+        task_id:
+          format: int64
+          type: integer
+        task_title:
+          type: string
+        from_user_id:
+          format: int64
+          type: integer
+        from_user_name:
+          type: string
+        to_user_id:
+          format: int64
+          type: integer
+        stamp_type:
+          enum:
+          - great
+          - thanks
+          - cute
+          - love
+          - star
+          type: string
+        message:
+          nullable: true
           type: string
         created_at:
           format: date-time

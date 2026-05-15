@@ -44,6 +44,12 @@ func NewHandler(container *di.Container) *Handler {
 		GetTaskTemplatesHandler: GetTaskTemplatesHandler{
 			InputPort: di.MustInvoke[usecase.ListTaskTemplatesInputPort](container),
 		},
+		PostTasksAppreciationHandler: PostTasksAppreciationHandler{
+			InputPort: di.MustInvoke[usecase.SendAppreciationInputPort](container),
+		},
+		GetNotificationsHandler: GetNotificationsHandler{
+			InputPort: di.MustInvoke[usecase.ListNotificationsInputPort](container),
+		},
 		GetHealthHandler: GetHealthHandler{},
 	}
 }
