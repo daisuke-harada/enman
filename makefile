@@ -1,6 +1,24 @@
 # ── Setup ────────────────────────────────────────────────────────────────────
 
+# 依存インストール・コード生成・DB構築・Seedまで全て実行（初回のみ）
 setup: backend-deps frontend-install gen docker-up backend-apply-schema backend-db-seed
+
+# DBをゼロから構築してSeedを投入（初回 or データをリセットしたいとき）
+db-setup: docker-up backend-apply-schema backend-db-seed
+
+# DBを完全リセットして再構築（テーブル・データを全て消してやり直す）
+db-reset: docker-up backend-db-drop backend-apply-schema backend-db-seed
+
+# ── Dev Server ────────────────────────────────────────────────────────────────
+
+# バックエンド (port 1099) とフロントエンド (port 3000) を同時起動
+# Ctrl+C で両方まとめて停止する
+dev: docker-up
+	@echo "🚀 Starting API (port 1099) and Web (port 3000) ..."
+	@trap 'kill 0' INT TERM; \
+		$(MAKE) -C backend run 2>&1 | sed 's/^/[API] /' & \
+		npm --prefix frontend run dev 2>&1 | sed 's/^/[WEB] /' & \
+		wait
 
 # ── Code Generation (OpenAPI → Go + TypeScript) ───────────────────────────────
 
