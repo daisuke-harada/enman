@@ -21,7 +21,8 @@ export function useJoinFamily() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (inviteCode: string) => {
-      const { data } = await postFamiliesJoin({ body: { invite_code: inviteCode } });
+      const { data, error } = await postFamiliesJoin({ body: { invite_code: inviteCode } });
+      if (error) throw error;
       return data;
     },
     onSuccess: () => {

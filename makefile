@@ -15,10 +15,16 @@ db-reset: docker-up backend-db-drop backend-apply-schema backend-db-seed
 # Ctrl+C で両方まとめて停止する
 dev: docker-up
 	@echo "🚀 Starting API (port 1099) and Web (port 3000) ..."
-	@trap 'kill 0' INT TERM; \
-		$(MAKE) -C backend run 2>&1 | sed 's/^/[API] /' & \
-		npm --prefix frontend run dev 2>&1 | sed 's/^/[WEB] /' & \
-		wait
+	@cleanup() { \
+		echo ""; \
+		lsof -ti:1099 | xargs kill -TERM 2>/dev/null; \
+		lsof -ti:3000 | xargs kill -TERM 2>/dev/null; \
+		kill 0 2>/dev/null; \
+	}; \
+	trap cleanup INT TERM; \
+	$(MAKE) -C backend run 2>&1 | sed 's/^/[API] /' & \
+	npm --prefix frontend run dev 2>&1 | sed 's/^/[WEB] /' & \
+	wait
 
 # ── Code Generation (OpenAPI → Go + TypeScript) ───────────────────────────────
 
@@ -63,6 +69,25 @@ frontend-dev:
 
 frontend-build:
 	npm --prefix frontend run build
+
+# ── E2E テスト (Playwright) ───────────────────────────────────────────────────
+
+# E2Eテストを実行（バックエンドが port 1099 で起動済みであること）
+# Playwright が port 3001 でフロントエンドを自動起動する
+e2e: docker-up
+	npm --prefix frontend run e2e
+
+# 特定のファイルだけ実行: make e2e FILE=e2e/01-auth.spec.ts
+e2e-file: docker-up
+	npm --prefix frontend exec -- playwright test $(FILE)
+
+# テスト結果レポートをブラウザで確認
+e2e-report:
+	npm --prefix frontend run e2e:report
+
+# インタラクティブUIモードで実行（デバッグ用）
+e2e-ui:
+	npm --prefix frontend exec -- playwright test --ui
 
 # ── iOS (Capacitor) ──────────────────────────────────────────────────────────
 

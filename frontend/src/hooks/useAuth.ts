@@ -20,7 +20,8 @@ export function useRegister() {
 export function useLogin() {
   return useMutation({
     mutationFn: async (body: LoginRequest) => {
-      const { data } = await postAuthLogin({ body });
+      const { data, error } = await postAuthLogin({ body });
+      if (error) throw error;
       if (data?.access_token && data?.refresh_token) {
         auth.setTokens(data.access_token, data.refresh_token);
       }

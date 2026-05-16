@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthGuard } from '@/components/AuthGuard';
-import { BottomNav } from '@/components/BottomNav';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AppShell } from '@/components/AppShell';
 import { useCreateTask, useTaskTemplates } from '@/hooks/useTasks';
 import type { TaskTemplateResponse } from '@/api-client/types.gen';
 
@@ -47,61 +47,97 @@ export default function NewTaskPage() {
   };
 
   return (
-    <AuthGuard>
-      <div className="min-h-screen pb-20">
-        <header className="bg-white border-b border-gray-100 px-4 pt-12 pb-4">
-          <h2 className="text-lg font-bold text-gray-800">タスクを追加</h2>
-        </header>
-
-        <div className="px-4 pt-4 space-y-6">
-          {/* クイック登録 */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">クイック登録</h3>
-            <form onSubmit={(e) => handleSubmit(e)} className="flex gap-2">
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => { setTitle(e.target.value); setError(''); }}
-                placeholder="例：皿洗い"
-                className="flex-1 border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
-              />
-              <button
-                type="submit"
-                disabled={createTask.isPending}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2.5 rounded-xl text-sm transition-colors disabled:opacity-50 shrink-0"
-              >
-                追加
-              </button>
-            </form>
-            {error && <p className="text-xs text-red-500 mt-2">{error}</p>}
-          </div>
-
-          {/* テンプレート */}
-          <div>
-            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">テンプレートから選ぶ</h3>
-            <div className="space-y-3">
-              {Object.entries(grouped).map(([category, items]) => (
-                <div key={category} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <p className="text-xs font-medium text-gray-400 mb-2">{category}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {items.map((tmpl) => (
-                      <button
-                        key={tmpl.id}
-                        onClick={() => handleTemplate(tmpl)}
-                        disabled={createTask.isPending}
-                        className="bg-gray-50 hover:bg-green-50 hover:text-green-700 border border-gray-200 hover:border-green-300 text-gray-700 text-sm px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
-                      >
-                        {tmpl.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
+    <AppShell>
+      <header
+        className="px-5 pb-4 bg-transparent"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}
+      >
+        <div className="md:hidden">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-md">
+              <span className="text-base">➕</span>
             </div>
+            <h1 className="text-xl font-bold text-gray-800">タスクを追加</h1>
+          </div>
+        </div>
+        <h1 className="hidden md:block text-2xl font-bold text-gray-800 mb-1">タスクを追加</h1>
+      </header>
+
+      <div className="px-4 md:px-6 md:max-w-2xl space-y-5">
+        {/* クイック登録 */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="bg-white/80 backdrop-blur-md rounded-[28px] p-5 shadow-card border border-white/60"
+        >
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">クイック登録</p>
+          <form onSubmit={(e) => handleSubmit(e)} className="flex gap-2">
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => { setTitle(e.target.value); setError(''); }}
+              placeholder="例：皿洗い"
+              className="flex-1 bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+            />
+            <motion.button
+              type="submit"
+              disabled={createTask.isPending}
+              whileTap={{ scale: 0.95 }}
+              className="bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold px-5 py-3 rounded-2xl text-sm shadow-lg shadow-green-200/50 transition-opacity disabled:opacity-60 shrink-0"
+            >
+              追加
+            </motion.button>
+          </form>
+          <AnimatePresence>
+            {error && (
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                className="text-xs text-red-500 bg-red-50 rounded-2xl px-4 py-2.5 mt-3"
+              >
+                {error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* テンプレート */}
+        <div>
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3 px-1">テンプレートから選ぶ</p>
+          <div className="space-y-3">
+            {Object.entries(grouped).map(([category, items], i) => (
+              <motion.div
+                key={category}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06, ease: 'easeOut' }}
+                className="bg-white/80 backdrop-blur-md rounded-[28px] p-5 shadow-card border border-white/60"
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="inline-block text-[10px] font-semibold text-[#76C893] bg-[#76C893]/10 px-2.5 py-1 rounded-full">
+                    {category}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {items.map((tmpl) => (
+                    <motion.button
+                      key={tmpl.id}
+                      onClick={() => handleTemplate(tmpl)}
+                      disabled={createTask.isPending}
+                      whileTap={{ scale: 0.94 }}
+                      className="bg-[#FFFAF0] hover:bg-[#76C893]/10 border border-gray-200/80 hover:border-[#76C893]/40 text-gray-700 hover:text-[#52B788] text-sm px-4 py-2 rounded-full transition-all disabled:opacity-50 font-medium"
+                    >
+                      {tmpl.name}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </div>
-      <BottomNav />
-    </AuthGuard>
+    </AppShell>
   );
 }

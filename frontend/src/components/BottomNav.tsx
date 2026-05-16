@@ -13,23 +13,38 @@ const tabs = [
 
 export function BottomNav() {
   const pathname = usePathname();
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex">
-      {tabs.map((tab) => {
-        const active = pathname === tab.href;
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={`flex-1 flex flex-col items-center py-2 gap-0.5 text-xs font-medium transition-colors ${
-              active ? 'text-green-600' : 'text-gray-400'
-            }`}
-          >
-            <span className="text-xl">{tab.icon}</span>
-            {tab.label}
-          </Link>
-        );
-      })}
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      <div className="bg-white/80 backdrop-blur-xl border-t border-white/60 shadow-[0_-4px_24px_rgba(118,200,147,0.12)]">
+        <div className="flex items-center justify-around px-2 py-2">
+          {tabs.map(({ href, label, icon }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all ${
+                  isActive ? 'text-[#52B788]' : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                <span className={`text-xl transition-transform ${isActive ? 'scale-110' : ''}`}>
+                  {icon}
+                </span>
+                <span className={`text-[10px] font-semibold ${isActive ? 'text-[#52B788]' : ''}`}>
+                  {label}
+                </span>
+                {isActive && (
+                  <span className="w-1 h-1 rounded-full bg-[#76C893]" />
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
     </nav>
   );
 }

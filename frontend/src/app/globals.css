@@ -1,3 +1,24 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #FFFAF0;
+  }
+
+  body {
+    background: linear-gradient(160deg, #FFFAF0 0%, #F0FFF4 50%, #FFF8E7 100%);
+    min-height: 100svh;
+    color: #2D3748;
+  }
+}
+
+@layer utilities {
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

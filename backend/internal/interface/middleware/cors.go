@@ -8,8 +8,8 @@ import (
 // CORSMiddleware はCORSの設定を行うミドルウェアです。
 func CORSMiddleware() echo.MiddlewareFunc {
 	return echoMiddleware.CORSWithConfig(echoMiddleware.CORSConfig{
-		AllowOrigins: []string{"http://localhost:3000", "http://localhost:8080"},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowOrigins: []string{"http://localhost:3000", "http://localhost:3001", "http://localhost:8080"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Accept", "Content-Type", "Authorization"},
 	})
 }
