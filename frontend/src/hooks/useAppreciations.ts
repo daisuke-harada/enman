@@ -17,6 +17,7 @@ export function useSendAppreciation() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
       queryClient.invalidateQueries({ queryKey: CURRENT_USER_KEY });
+      queryClient.invalidateQueries({ queryKey: ['tasks', 'today_done'] });
     },
   });
 }

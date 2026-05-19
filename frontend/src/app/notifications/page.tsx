@@ -5,32 +5,7 @@ import { AppShell } from '@/components/AppShell';
 import { useNotifications } from '@/hooks/useAppreciations';
 import type { AppreciationResponse } from '@/api-client/types.gen';
 
-const STAMP_EMOJI: Record<string, string> = {
-  great: '👏',
-  thanks: '🙏',
-  cute: '💕',
-  love: '❤️',
-  star: '⭐',
-};
-
-const STAMP_LABEL: Record<string, string> = {
-  great: 'すごい！',
-  thanks: 'ありがとう',
-  cute: 'かわいい',
-  love: '大好き',
-  star: '最高',
-};
-
-const STAMP_COLOR: Record<string, string> = {
-  great: 'from-blue-400/20 to-blue-300/10 border-blue-200/40',
-  thanks: 'from-[#76C893]/20 to-[#52B788]/10 border-[#76C893]/30',
-  cute: 'from-pink-400/20 to-pink-300/10 border-pink-200/40',
-  love: 'from-red-400/20 to-red-300/10 border-red-200/40',
-  star: 'from-[#FF9E00]/20 to-[#FFB74D]/10 border-[#FF9E00]/30',
-};
-
 function NotificationCard({ item, index }: { item: AppreciationResponse; index: number }) {
-  const stamp = item.stamp_type ?? 'thanks';
   const createdAt = item.created_at ? new Date(item.created_at) : null;
   const dateStr = createdAt
     ? `${createdAt.getMonth() + 1}/${createdAt.getDate()} ${String(createdAt.getHours()).padStart(2, '0')}:${String(createdAt.getMinutes()).padStart(2, '0')}`
@@ -41,17 +16,16 @@ function NotificationCard({ item, index }: { item: AppreciationResponse; index: 
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
-      className={`bg-gradient-to-r ${STAMP_COLOR[stamp]} backdrop-blur-md rounded-[24px] px-5 py-4 border shadow-sm`}
+      className="bg-gradient-to-r from-[#76C893]/20 to-[#52B788]/10 backdrop-blur-md rounded-[24px] px-5 py-4 border border-[#76C893]/30 shadow-sm"
     >
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-2xl bg-white/60 backdrop-blur-sm flex items-center justify-center shrink-0 shadow-sm">
-          <span className="text-2xl">{STAMP_EMOJI[stamp]}</span>
+          <span className="text-2xl">💬</span>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-800">
             <span className="text-[#52B788]">{item.from_user_name}</span>
-            <span className="text-gray-500 font-normal"> さんから </span>
-            <span className="text-[#FF9E00] font-bold">{STAMP_LABEL[stamp]}</span>
+            <span className="text-gray-500 font-normal"> さんからコメントが届きました</span>
           </p>
           <p className="text-xs text-gray-500 mt-1 truncate">「{item.task_title}」</p>
           {item.message && (

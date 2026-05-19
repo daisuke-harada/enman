@@ -48,7 +48,7 @@ func (r *taskRepository) Search(ctx context.Context, params repository.TaskSearc
 	}
 
 	var tasks []*model.Task
-	if err := db.Order("created_at DESC").Find(&tasks).Error; err != nil {
+	if err := db.Preload("Appreciations.FromUser").Order("created_at DESC").Find(&tasks).Error; err != nil {
 		return nil, err
 	}
 	return tasks, nil

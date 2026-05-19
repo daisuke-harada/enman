@@ -26,7 +26,6 @@ func (h *PostTasksAppreciationHandler) PostTasksAppreciation(ctx echo.Context, t
 	input := usecase.SendAppreciationInput{
 		TaskID:     uint(taskId),
 		FromUserID: userID,
-		StampType:  string(req.StampType),
 		Message:    req.Message,
 	}
 

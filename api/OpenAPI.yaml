@@ -585,6 +585,10 @@ components:
         created_at:
           type: string
           format: date-time
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/AppreciationResponse"
     TaskTemplateResponse:
       type: object
       properties:
@@ -611,12 +615,8 @@ components:
     SendAppreciationRequest:
       type: object
       required:
-        - stamp_type
+        - message
       properties:
-        stamp_type:
-          type: string
-          enum: [great, thanks, cute, love, star]
-          description: "great: すごい！ / thanks: ありがとう / cute: かわいい / love: 大好き / star: 最高"
         message:
           type: string
           maxLength: 255
@@ -642,9 +642,6 @@ components:
           format: int64
         to_user_name:
           type: string
-        stamp_type:
-          type: string
-          enum: [great, thanks, cute, love, star]
         message:
           type: string
           nullable: true

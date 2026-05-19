@@ -714,6 +714,25 @@ components:
         status: pending
         done_at: 2000-01-23T04:56:07.000+00:00
         created_at: 2000-01-23T04:56:07.000+00:00
+        comments:
+        - id: 5
+          task_id: 2
+          task_title: task_title
+          from_user_id: 7
+          from_user_name: from_user_name
+          to_user_id: 9
+          to_user_name: to_user_name
+          message: message
+          created_at: 2000-01-23T04:56:07.000+00:00
+        - id: 5
+          task_id: 2
+          task_title: task_title
+          from_user_id: 7
+          from_user_name: from_user_name
+          to_user_id: 9
+          to_user_name: to_user_name
+          message: message
+          created_at: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           format: int64
@@ -745,6 +764,10 @@ components:
         created_at:
           format: date-time
           type: string
+        comments:
+          items:
+            $ref: "#/components/schemas/AppreciationResponse"
+          type: array
       type: object
     TaskTemplateResponse:
       example:
@@ -780,36 +803,24 @@ components:
       type: object
     SendAppreciationRequest:
       example:
-        stamp_type: great
         message: ピカピカだね！
       properties:
-        stamp_type:
-          description: "great: すごい！ / thanks: ありがとう / cute: かわいい / love: 大好き / star:\
-            \ 最高"
-          enum:
-          - great
-          - thanks
-          - cute
-          - love
-          - star
-          type: string
         message:
           example: ピカピカだね！
           maxLength: 255
           type: string
       required:
-      - stamp_type
+      - message
       type: object
     AppreciationResponse:
       example:
-        id: 0
-        task_id: 6
+        id: 5
+        task_id: 2
         task_title: task_title
-        from_user_id: 1
+        from_user_id: 7
         from_user_name: from_user_name
-        to_user_id: 5
+        to_user_id: 9
         to_user_name: to_user_name
-        stamp_type: great
         message: message
         created_at: 2000-01-23T04:56:07.000+00:00
       properties:
@@ -830,14 +841,6 @@ components:
           format: int64
           type: integer
         to_user_name:
-          type: string
-        stamp_type:
-          enum:
-          - great
-          - thanks
-          - cute
-          - love
-          - star
           type: string
         message:
           nullable: true

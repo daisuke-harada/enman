@@ -77,7 +77,7 @@ CREATE TABLE appreciations (
   task_id BIGINT UNSIGNED NOT NULL,
   from_user_id BIGINT UNSIGNED NOT NULL,
   to_user_id BIGINT UNSIGNED NOT NULL,
-  stamp_type VARCHAR(20) NOT NULL,
+  stamp_type VARCHAR(20),
   message VARCHAR(255),
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (id),

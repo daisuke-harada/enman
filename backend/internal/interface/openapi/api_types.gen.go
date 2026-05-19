@@ -13,60 +13,6 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "bearerAuth.Scopes"
 )
 
-// Defines values for AppreciationResponseStampType.
-const (
-	AppreciationResponseStampTypeCute   AppreciationResponseStampType = "cute"
-	AppreciationResponseStampTypeGreat  AppreciationResponseStampType = "great"
-	AppreciationResponseStampTypeLove   AppreciationResponseStampType = "love"
-	AppreciationResponseStampTypeStar   AppreciationResponseStampType = "star"
-	AppreciationResponseStampTypeThanks AppreciationResponseStampType = "thanks"
-)
-
-// Valid indicates whether the value is a known member of the AppreciationResponseStampType enum.
-func (e AppreciationResponseStampType) Valid() bool {
-	switch e {
-	case AppreciationResponseStampTypeCute:
-		return true
-	case AppreciationResponseStampTypeGreat:
-		return true
-	case AppreciationResponseStampTypeLove:
-		return true
-	case AppreciationResponseStampTypeStar:
-		return true
-	case AppreciationResponseStampTypeThanks:
-		return true
-	default:
-		return false
-	}
-}
-
-// Defines values for SendAppreciationRequestStampType.
-const (
-	SendAppreciationRequestStampTypeCute   SendAppreciationRequestStampType = "cute"
-	SendAppreciationRequestStampTypeGreat  SendAppreciationRequestStampType = "great"
-	SendAppreciationRequestStampTypeLove   SendAppreciationRequestStampType = "love"
-	SendAppreciationRequestStampTypeStar   SendAppreciationRequestStampType = "star"
-	SendAppreciationRequestStampTypeThanks SendAppreciationRequestStampType = "thanks"
-)
-
-// Valid indicates whether the value is a known member of the SendAppreciationRequestStampType enum.
-func (e SendAppreciationRequestStampType) Valid() bool {
-	switch e {
-	case SendAppreciationRequestStampTypeCute:
-		return true
-	case SendAppreciationRequestStampTypeGreat:
-		return true
-	case SendAppreciationRequestStampTypeLove:
-		return true
-	case SendAppreciationRequestStampTypeStar:
-		return true
-	case SendAppreciationRequestStampTypeThanks:
-		return true
-	default:
-		return false
-	}
-}
-
 // Defines values for TaskResponseStatus.
 const (
 	TaskResponseStatusDone    TaskResponseStatus = "done"
@@ -105,20 +51,16 @@ func (e GetTasksParamsStatus) Valid() bool {
 
 // AppreciationResponse defines model for AppreciationResponse.
 type AppreciationResponse struct {
-	CreatedAt    *time.Time                     `json:"created_at,omitempty"`
-	FromUserId   *int64                         `json:"from_user_id,omitempty"`
-	FromUserName *string                        `json:"from_user_name,omitempty"`
-	Id           *int64                         `json:"id,omitempty"`
-	Message      *string                        `json:"message,omitempty"`
-	StampType    *AppreciationResponseStampType `json:"stamp_type,omitempty"`
-	TaskId       *int64                         `json:"task_id,omitempty"`
-	TaskTitle    *string                        `json:"task_title,omitempty"`
-	ToUserId     *int64                         `json:"to_user_id,omitempty"`
-	ToUserName   *string                        `json:"to_user_name,omitempty"`
+	CreatedAt    *time.Time `json:"created_at,omitempty"`
+	FromUserId   *int64     `json:"from_user_id,omitempty"`
+	FromUserName *string    `json:"from_user_name,omitempty"`
+	Id           *int64     `json:"id,omitempty"`
+	Message      *string    `json:"message,omitempty"`
+	TaskId       *int64     `json:"task_id,omitempty"`
+	TaskTitle    *string    `json:"task_title,omitempty"`
+	ToUserId     *int64     `json:"to_user_id,omitempty"`
+	ToUserName   *string    `json:"to_user_name,omitempty"`
 }
-
-// AppreciationResponseStampType defines model for AppreciationResponse.StampType.
-type AppreciationResponseStampType string
 
 // AuthResponse defines model for AuthResponse.
 type AuthResponse struct {
@@ -200,26 +142,21 @@ type RegisterRequest struct {
 
 // SendAppreciationRequest defines model for SendAppreciationRequest.
 type SendAppreciationRequest struct {
-	Message *string `json:"message,omitempty"`
-
-	// StampType great: すごい！ / thanks: ありがとう / cute: かわいい / love: 大好き / star: 最高
-	StampType SendAppreciationRequestStampType `json:"stamp_type"`
+	Message string `json:"message"`
 }
-
-// SendAppreciationRequestStampType great: すごい！ / thanks: ありがとう / cute: かわいい / love: 大好き / star: 最高
-type SendAppreciationRequestStampType string
 
 // TaskResponse defines model for TaskResponse.
 type TaskResponse struct {
-	Category  *string             `json:"category,omitempty"`
-	CreatedAt *time.Time          `json:"created_at,omitempty"`
-	CreatedBy *int64              `json:"created_by,omitempty"`
-	DoneAt    *time.Time          `json:"done_at,omitempty"`
-	DoneBy    *int64              `json:"done_by,omitempty"`
-	FamilyId  *int64              `json:"family_id,omitempty"`
-	Id        *int64              `json:"id,omitempty"`
-	Status    *TaskResponseStatus `json:"status,omitempty"`
-	Title     *string             `json:"title,omitempty"`
+	Category  *string                 `json:"category,omitempty"`
+	Comments  *[]AppreciationResponse `json:"comments,omitempty"`
+	CreatedAt *time.Time              `json:"created_at,omitempty"`
+	CreatedBy *int64                  `json:"created_by,omitempty"`
+	DoneAt    *time.Time              `json:"done_at,omitempty"`
+	DoneBy    *int64                  `json:"done_by,omitempty"`
+	FamilyId  *int64                  `json:"family_id,omitempty"`
+	Id        *int64                  `json:"id,omitempty"`
+	Status    *TaskResponseStatus     `json:"status,omitempty"`
+	Title     *string                 `json:"title,omitempty"`
 }
 
 // TaskResponseStatus defines model for TaskResponse.Status.

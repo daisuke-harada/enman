@@ -273,106 +273,30 @@ func main() {
 		taskByTitle[t.Title] = t
 	}
 
-	// ── 5. 感謝スタンプ ────────────────────────
+	// ── 5. 感謝コメント ────────────────────────
 	type appreciationSeed struct {
 		Task      *model.Task
 		FromUser  *model.User
-		ToUser    *model.User // task.DoneBy と一致する必要あり
-		StampType model.StampType
+		ToUser    *model.User
 		Message   *string
 		CreatedAt time.Time
 	}
 	msg := func(s string) *string { return &s }
 	appreciationSeeds := []appreciationSeed{
-		// 皿洗い（mama→mama... ではなくpapaとharutoがmamaに送る）
-		{
-			Task: taskByTitle["皿洗い"], FromUser: papa, ToUser: mama,
-			StampType: model.StampTypeThanks,
-			Message:   msg("いつもきれいにしてくれてありがとう！"),
-			CreatedAt: daysAgo(5, 21, 0),
-		},
-		{
-			Task: taskByTitle["皿洗い"], FromUser: haruto, ToUser: mama,
-			StampType: model.StampTypeCute,
-			CreatedAt: daysAgo(5, 21, 30),
-		},
-		// ゴミ出し（mamaとsakuraがpapaに）
-		{
-			Task: taskByTitle["ゴミ出し"], FromUser: mama, ToUser: papa,
-			StampType: model.StampTypeGreat,
-			Message:   msg("朝早いのにありがとう！助かってます😊"),
-			CreatedAt: daysAgo(4, 8, 0),
-		},
-		{
-			Task: taskByTitle["ゴミ出し"], FromUser: sakura, ToUser: papa,
-			StampType: model.StampTypeLove,
-			CreatedAt: daysAgo(4, 9, 0),
-		},
-		// 掃除機がけ（papaとmamaがharutoに）
-		{
-			Task: taskByTitle["掃除機がけ"], FromUser: papa, ToUser: haruto,
-			StampType: model.StampTypeGreat,
-			Message:   msg("ハルト、隅までやってくれてありがとう！"),
-			CreatedAt: daysAgo(4, 16, 0),
-		},
-		{
-			Task: taskByTitle["掃除機がけ"], FromUser: mama, ToUser: haruto,
-			StampType: model.StampTypeStar,
-			CreatedAt: daysAgo(4, 16, 30),
-		},
-		// 洗濯（papaがmamaに）
-		{
-			Task: taskByTitle["洗濯"], FromUser: papa, ToUser: mama,
-			StampType: model.StampTypeThanks,
-			Message:   msg("毎日お疲れ様、助かってます！"),
-			CreatedAt: daysAgo(3, 10, 0),
-		},
-		// 洗濯物の干し（mamaがsakuraに）
-		{
-			Task: taskByTitle["洗濯物の干し"], FromUser: mama, ToUser: sakura,
-			StampType: model.StampTypeGreat,
-			Message:   msg("サクラ、上手にできたね！えらい！"),
-			CreatedAt: daysAgo(3, 12, 0),
-		},
-		// 夕食の料理（papaとharutoとsakuraがmamaに）
-		{
-			Task: taskByTitle["夕食の料理"], FromUser: papa, ToUser: mama,
-			StampType: model.StampTypeLove,
-			Message:   msg("今日の夕食、最高においしかった！！"),
-			CreatedAt: daysAgo(2, 19, 0),
-		},
-		{
-			Task: taskByTitle["夕食の料理"], FromUser: haruto, ToUser: mama,
-			StampType: model.StampTypeStar,
-			Message:   msg("ママの料理が世界一好き！"),
-			CreatedAt: daysAgo(2, 19, 15),
-		},
-		{
-			Task: taskByTitle["夕食の料理"], FromUser: sakura, ToUser: mama,
-			StampType: model.StampTypeLove,
-			CreatedAt: daysAgo(2, 19, 30),
-		},
-		// トイレ掃除（mamaがpapaに）
-		{
-			Task: taskByTitle["トイレ掃除"], FromUser: mama, ToUser: papa,
-			StampType: model.StampTypeGreat,
-			Message:   msg("ピカピカだね！いつもありがとう✨"),
-			CreatedAt: daysAgo(2, 11, 0),
-		},
-		// 加湿器の給水（mamaがpapaに）
-		{
-			Task: taskByTitle["加湿器の給水"], FromUser: mama, ToUser: papa,
-			StampType: model.StampTypeThanks,
-			Message:   msg("気づいてくれてありがとう！のどが楽になった😊"),
-			CreatedAt: daysAgo(2, 9, 0),
-		},
-		// お風呂掃除（papaがmamaに）
-		{
-			Task: taskByTitle["お風呂掃除"], FromUser: papa, ToUser: mama,
-			StampType: model.StampTypeStar,
-			Message:   msg("早いね、ありがとう！気持ちよく入れるよ"),
-			CreatedAt: daysAgo(1, 20, 0),
-		},
+		{Task: taskByTitle["皿洗い"], FromUser: papa, ToUser: mama, Message: msg("いつもきれいにしてくれてありがとう！"), CreatedAt: daysAgo(5, 21, 0)},
+		{Task: taskByTitle["皿洗い"], FromUser: haruto, ToUser: mama, Message: msg("ピカピカだね！"), CreatedAt: daysAgo(5, 21, 30)},
+		{Task: taskByTitle["ゴミ出し"], FromUser: mama, ToUser: papa, Message: msg("朝早いのにありがとう！助かってます😊"), CreatedAt: daysAgo(4, 8, 0)},
+		{Task: taskByTitle["ゴミ出し"], FromUser: sakura, ToUser: papa, Message: msg("パパ大好き！"), CreatedAt: daysAgo(4, 9, 0)},
+		{Task: taskByTitle["掃除機がけ"], FromUser: papa, ToUser: haruto, Message: msg("ハルト、隅までやってくれてありがとう！"), CreatedAt: daysAgo(4, 16, 0)},
+		{Task: taskByTitle["掃除機がけ"], FromUser: mama, ToUser: haruto, Message: msg("きれいになったね！"), CreatedAt: daysAgo(4, 16, 30)},
+		{Task: taskByTitle["洗濯"], FromUser: papa, ToUser: mama, Message: msg("毎日お疲れ様、助かってます！"), CreatedAt: daysAgo(3, 10, 0)},
+		{Task: taskByTitle["洗濯物の干し"], FromUser: mama, ToUser: sakura, Message: msg("サクラ、上手にできたね！えらい！"), CreatedAt: daysAgo(3, 12, 0)},
+		{Task: taskByTitle["夕食の料理"], FromUser: papa, ToUser: mama, Message: msg("今日の夕食、最高においしかった！！"), CreatedAt: daysAgo(2, 19, 0)},
+		{Task: taskByTitle["夕食の料理"], FromUser: haruto, ToUser: mama, Message: msg("ママの料理が世界一好き！"), CreatedAt: daysAgo(2, 19, 15)},
+		{Task: taskByTitle["夕食の料理"], FromUser: sakura, ToUser: mama, Message: msg("おいしかったよ😊"), CreatedAt: daysAgo(2, 19, 30)},
+		{Task: taskByTitle["トイレ掃除"], FromUser: mama, ToUser: papa, Message: msg("ピカピカだね！いつもありがとう✨"), CreatedAt: daysAgo(2, 11, 0)},
+		{Task: taskByTitle["加湿器の給水"], FromUser: mama, ToUser: papa, Message: msg("気づいてくれてありがとう！のどが楽になった😊"), CreatedAt: daysAgo(2, 9, 0)},
+		{Task: taskByTitle["お風呂掃除"], FromUser: papa, ToUser: mama, Message: msg("早いね、ありがとう！気持ちよく入れるよ"), CreatedAt: daysAgo(1, 20, 0)},
 	}
 
 	for _, s := range appreciationSeeds {
@@ -387,7 +311,6 @@ func main() {
 				TaskID:     s.Task.ID,
 				FromUserID: s.FromUser.ID,
 				ToUserID:   s.ToUser.ID,
-				StampType:  s.StampType,
 				Message:    s.Message,
 				CreatedAt:  s.CreatedAt,
 			}

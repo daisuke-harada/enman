@@ -21,9 +21,10 @@ type Task struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 
-	Family  *Family `gorm:"foreignKey:FamilyID"`
-	Creator *User   `gorm:"foreignKey:CreatedBy"`
-	Doer    *User   `gorm:"foreignKey:DoneBy"`
+	Family       *Family        `gorm:"foreignKey:FamilyID"`
+	Creator      *User          `gorm:"foreignKey:CreatedBy"`
+	Doer         *User          `gorm:"foreignKey:DoneBy"`
+	Appreciations []*Appreciation `gorm:"foreignKey:TaskID"`
 }
 
 type TaskTemplate struct {

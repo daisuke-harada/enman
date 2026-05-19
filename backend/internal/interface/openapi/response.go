@@ -82,6 +82,11 @@ func NewTaskResponse(task *model.Task) TaskResponse {
 		doneBy := int64(*task.DoneBy)
 		resp.DoneBy = &doneBy
 	}
+	comments := make([]AppreciationResponse, 0, len(task.Appreciations))
+	for _, a := range task.Appreciations {
+		comments = append(comments, NewAppreciationResponse(a))
+	}
+	resp.Comments = &comments
 	return resp
 }
 
@@ -99,14 +104,12 @@ func NewAppreciationResponse(a *model.Appreciation) AppreciationResponse {
 	taskID := int64(a.TaskID)
 	fromUserID := int64(a.FromUserID)
 	toUserID := int64(a.ToUserID)
-	stampType := AppreciationResponseStampType(a.StampType)
 
 	resp := AppreciationResponse{
 		Id:         &id,
 		TaskId:     &taskID,
 		FromUserId: &fromUserID,
 		ToUserId:   &toUserID,
-		StampType:  &stampType,
 		Message:    a.Message,
 		CreatedAt:  &a.CreatedAt,
 	}

@@ -11,14 +11,6 @@ import type { TaskResponse } from '@/api-client/types.gen';
 
 type Filter = 'pending' | 'today_done';
 
-const STAMPS: { type: 'great' | 'thanks' | 'cute' | 'love' | 'star'; emoji: string; label: string }[] = [
-  { type: 'great', emoji: '👏', label: 'すごい！' },
-  { type: 'thanks', emoji: '🙏', label: 'ありがとう' },
-  { type: 'cute', emoji: '💕', label: 'かわいい' },
-  { type: 'love', emoji: '❤️', label: '大好き' },
-  { type: 'star', emoji: '⭐', label: '最高' },
-];
-
 // canvas-confettiを動的インポート（SSR対策）
 async function launchConfetti() {
   const confetti = (await import('canvas-confetti')).default;
@@ -32,89 +24,65 @@ async function launchConfetti() {
   });
 }
 
-function StampButton({ stamp, onPress, disabled }: {
-  stamp: typeof STAMPS[number];
-  onPress: () => void;
-  disabled: boolean;
-}) {
-  const [bouncing, setBouncing] = useState(false);
-
-  const handleClick = () => {
-    if (disabled || bouncing) return;
-    setBouncing(true);
-    onPress();
-    setTimeout(() => setBouncing(false), 400);
-  };
-
-  return (
-    <motion.button
-      onClick={handleClick}
-      disabled={disabled}
-      title={stamp.label}
-      animate={bouncing ? { scale: [1, 1.3, 0.9, 1] } : { scale: 1 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
-      whileHover={{ scale: 1.15 }}
-      whileTap={{ scale: 0.9 }}
-      className="text-2xl disabled:opacity-40 focus:outline-none"
-    >
-      {stamp.emoji}
-    </motion.button>
-  );
-}
-
-function StampPicker({ taskId, currentUserId, doneBy, onSent }: {
+function CommentForm({ taskId, currentUserId, doneBy, comments }: {
   taskId: number;
   currentUserId: number;
   doneBy?: number | null;
-  onSent: () => void;
+  comments?: { from_user_id?: number; from_user_name?: string; message?: string | null }[];
 }) {
   const sendAppreciation = useSendAppreciation();
-  const [sent, setSent] = useState<string | null>(null);
-
-  // フィードバックを表示してから親に通知（React 18バッチングで即アンマウントを防ぐ）
-  useEffect(() => {
-    if (sent) {
-      const timer = setTimeout(() => onSent(), 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [sent, onSent]);
+  const [text, setText] = useState('');
+  const [sent, setSent] = useState(false);
 
   if (!doneBy || doneBy === currentUserId) return null;
 
-  const handleStamp = async (type: typeof STAMPS[number]['type']) => {
-    if (sent) return;
-    // @capacitor/haptics: HapticsPlugin.impact({ style: ImpactStyle.Light })
-    await sendAppreciation.mutateAsync({ taskId, body: { stamp_type: type } });
-    setSent(type);
-  };
+  const alreadySent = comments?.some((c) => c.from_user_id === currentUserId) ?? false;
 
-  if (sent) {
-    const stamp = STAMPS.find((s) => s.type === sent);
-    return (
-      <motion.p
-        initial={{ opacity: 0, y: 4 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-xs text-[#52B788] mt-2 pl-12 font-medium"
-      >
-        {stamp?.emoji} 送りました！
-      </motion.p>
-    );
-  }
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim() || sendAppreciation.isPending) return;
+    await sendAppreciation.mutateAsync({ taskId, body: { message: text.trim() } });
+    setText('');
+    setSent(true);
+  };
 
   return (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: 'auto' }}
-      className="flex gap-3 mt-3 pl-12"
+      className="mt-3 pl-12 space-y-1.5"
     >
-      {STAMPS.map((s) => (
-        <StampButton
-          key={s.type}
-          stamp={s}
-          onPress={() => handleStamp(s.type)}
-          disabled={sendAppreciation.isPending}
-        />
-      ))}
+      {comments && comments.length > 0 && (
+        <div className="space-y-1">
+          {comments.map((c, i) => (
+            <p key={i} className="text-xs text-gray-500">
+              <span className="font-semibold text-[#52B788]">{c.from_user_name}</span>
+              {': '}
+              {c.message}
+            </p>
+          ))}
+        </div>
+      )}
+      {!alreadySent && (
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="コメントを送る..."
+            maxLength={255}
+            className="flex-1 bg-[#F7FDF9] border border-[#76C893]/30 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#76C893]/50"
+          />
+          <motion.button
+            type="submit"
+            disabled={!text.trim() || sendAppreciation.isPending}
+            whileTap={{ scale: 0.95 }}
+            className="text-xs font-semibold text-[#52B788] disabled:opacity-40 px-2"
+          >
+            {sent ? '✓' : '送信'}
+          </motion.button>
+        </form>
+      )}
     </motion.div>
   );
 }
@@ -124,7 +92,6 @@ function TaskCard({ task, currentUserId, onComplete }: {
   currentUserId: number;
   onComplete: (id: number) => void;
 }) {
-  const [stampSent, setStampSent] = useState(false);
   const isPending = task.status === 'pending';
 
   return (
@@ -172,12 +139,12 @@ function TaskCard({ task, currentUserId, onComplete }: {
         </div>
       </div>
 
-      {!isPending && !stampSent && task.id && (
-        <StampPicker
+      {!isPending && task.id && (
+        <CommentForm
           taskId={task.id}
           currentUserId={currentUserId}
           doneBy={task.done_by}
-          onSent={() => setStampSent(true)}
+          comments={task.comments}
         />
       )}
     </motion.div>

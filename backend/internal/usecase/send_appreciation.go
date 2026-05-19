@@ -19,22 +19,19 @@ type SendAppreciationInputPort interface {
 }
 
 type SendAppreciationInput struct {
-	TaskID        uint
-	FromUserID    uint
-	StampType     string
-	Message       *string
+	TaskID     uint
+	FromUserID uint
+	Message    string
 }
 
 func (i *SendAppreciationInput) Validate() error {
 	var errs []string
 
-	validStamps := map[string]bool{"great": true, "thanks": true, "cute": true, "love": true, "star": true}
-	if !validStamps[i.StampType] {
-		errs = append(errs, "無効なスタンプタイプです")
+	if strings.TrimSpace(i.Message) == "" {
+		errs = append(errs, "コメントを入力してください")
 	}
-
-	if i.Message != nil && len(strings.TrimSpace(*i.Message)) > 255 {
-		errs = append(errs, "メッセージは255文字以内で入力してください")
+	if len([]rune(i.Message)) > 255 {
+		errs = append(errs, "コメントは255文字以内で入力してください")
 	}
 
 	if len(errs) > 0 {
@@ -85,19 +82,18 @@ func (i *SendAppreciationInteractor) Execute(ctx context.Context, input SendAppr
 	}
 
 	if task.Status != model.TaskStatusDone || task.DoneBy == nil {
-		return nil, apperror.UnprocessableEntity("完了済みのタスクにのみスタンプを送れます")
+		return nil, apperror.UnprocessableEntity("完了済みのタスクにのみコメントを送れます")
 	}
 
 	if *task.DoneBy == input.FromUserID {
-		return nil, apperror.UnprocessableEntity("自分が完了したタスクにはスタンプを送れません")
+		return nil, apperror.UnprocessableEntity("自分が完了したタスクにはコメントを送れません")
 	}
 
 	appreciation := &model.Appreciation{
 		TaskID:     input.TaskID,
 		FromUserID: input.FromUserID,
 		ToUserID:   *task.DoneBy,
-		StampType:  model.StampType(input.StampType),
-		Message:    input.Message,
+		Message:    &input.Message,
 	}
 
 	if err := i.AppreciationRepo.Create(ctx, appreciation); err != nil {

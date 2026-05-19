@@ -9,9 +9,6 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recha
 
 const USER_COLORS = ['#76C893', '#FF9E00', '#52B788', '#FFB74D', '#A8DDB5', '#FFC1CC', '#06b6d4', '#84cc16'];
 
-const STAMP_EMOJI: Record<string, string> = {
-  great: '👏', thanks: '🙏', cute: '💕', love: '❤️', star: '⭐',
-};
 
 function aggregateByUser(items: ContributionItem[]) {
   const map = new Map<number, { name: string; count: number }>();
@@ -94,7 +91,6 @@ function GoalProgressBar({ goal }: { goal: FamilyGoalResponse }) {
 }
 
 function TimelineCard({ item, index }: { item: AppreciationResponse; index: number }) {
-  const stamp = item.stamp_type ?? 'thanks';
   const createdAt = item.created_at ? new Date(item.created_at) : null;
   const dateStr = createdAt
     ? `${createdAt.getMonth() + 1}/${createdAt.getDate()} ${String(createdAt.getHours()).padStart(2, '0')}:${String(createdAt.getMinutes()).padStart(2, '0')}`
@@ -107,7 +103,7 @@ function TimelineCard({ item, index }: { item: AppreciationResponse; index: numb
       transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
       className="flex items-start gap-3 py-3 border-b border-gray-100/80 last:border-0"
     >
-      <span className="text-xl shrink-0">{STAMP_EMOJI[stamp]}</span>
+      <span className="text-xl shrink-0">💬</span>
       <div className="flex-1 min-w-0">
         <p className="text-xs text-gray-700">
           <span className="font-semibold text-[#52B788]">{item.from_user_name}</span>

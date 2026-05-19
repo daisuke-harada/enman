@@ -39,29 +39,29 @@ func TestSendAppreciationInteractor_Execute(t *testing.T) {
 		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(fromUser, nil)
 		mockTaskRepo.EXPECT().FindByID(ctx, uint(5)).Return(doneTask, nil)
 		mockAppreciationRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
-		mockUserRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil) // fromUser point
+		mockUserRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
 		mockUserRepo.EXPECT().FindByID(ctx, doneByUserID).Return(toUser, nil)
-		mockUserRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil) // toUser point
+		mockUserRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
 
 		interactor := usecase.NewSendAppreciationInteractor(mockAppreciationRepo, mockTaskRepo, mockUserRepo)
 		out, err := interactor.Execute(ctx, usecase.SendAppreciationInput{
 			TaskID:     5,
 			FromUserID: 10,
-			StampType:  "thanks",
+			Message:    "ピカピカだね！",
 		})
 
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
-		if out.Appreciation.StampType != model.StampTypeThanks {
-			t.Errorf("want StampType=thanks, got %s", out.Appreciation.StampType)
-		}
 		if out.Appreciation.ToUserID != doneByUserID {
 			t.Errorf("want ToUserID=%d, got %d", doneByUserID, out.Appreciation.ToUserID)
 		}
+		if out.Appreciation.Message == nil || *out.Appreciation.Message != "ピカピカだね！" {
+			t.Errorf("want Message=ピカピカだね！, got %v", out.Appreciation.Message)
+		}
 	})
 
-	t.Run("未完了タスクにはスタンプ不可", func(t *testing.T) {
+	t.Run("未完了タスクにはコメント不可", func(t *testing.T) {
 		mockAppreciationRepo := repositorymock.NewMockAppreciationRepository(ctrl)
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 		mockUserRepo := repositorymock.NewMockUserRepository(ctrl)
@@ -74,14 +74,14 @@ func TestSendAppreciationInteractor_Execute(t *testing.T) {
 		_, err := interactor.Execute(ctx, usecase.SendAppreciationInput{
 			TaskID:     5,
 			FromUserID: 10,
-			StampType:  "great",
+			Message:    "ありがとう",
 		})
 		if err == nil {
 			t.Error("expected error for pending task")
 		}
 	})
 
-	t.Run("自分完了タスクにはスタンプ不可", func(t *testing.T) {
+	t.Run("自分完了タスクにはコメント不可", func(t *testing.T) {
 		mockAppreciationRepo := repositorymock.NewMockAppreciationRepository(ctrl)
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 		mockUserRepo := repositorymock.NewMockUserRepository(ctrl)
@@ -94,14 +94,14 @@ func TestSendAppreciationInteractor_Execute(t *testing.T) {
 		_, err := interactor.Execute(ctx, usecase.SendAppreciationInput{
 			TaskID:     5,
 			FromUserID: 10,
-			StampType:  "great",
+			Message:    "ありがとう",
 		})
 		if err == nil {
 			t.Error("expected error for self-completed task")
 		}
 	})
 
-	t.Run("無効なスタンプタイプ", func(t *testing.T) {
+	t.Run("空コメントはバリデーションエラー", func(t *testing.T) {
 		mockAppreciationRepo := repositorymock.NewMockAppreciationRepository(ctrl)
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 		mockUserRepo := repositorymock.NewMockUserRepository(ctrl)
@@ -110,10 +110,10 @@ func TestSendAppreciationInteractor_Execute(t *testing.T) {
 		_, err := interactor.Execute(ctx, usecase.SendAppreciationInput{
 			TaskID:     5,
 			FromUserID: 10,
-			StampType:  "invalid",
+			Message:    "",
 		})
 		if err == nil {
-			t.Error("expected validation error for invalid stamp type")
+			t.Error("expected validation error for empty message")
 		}
 	})
 }
