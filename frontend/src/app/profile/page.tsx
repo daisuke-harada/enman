@@ -38,8 +38,8 @@ export default function ProfilePage() {
   };
 
   const handleCopyInviteCode = () => {
-    if (typeof window !== 'undefined' && (user as Record<string, unknown>)?.family_invite_code) {
-      navigator.clipboard.writeText(String((user as Record<string, unknown>).family_invite_code));
+    if (typeof window !== 'undefined' && user?.invite_code) {
+      navigator.clipboard.writeText(user.invite_code);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }

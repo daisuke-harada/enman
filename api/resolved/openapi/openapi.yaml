@@ -527,10 +527,10 @@ components:
   schemas:
     RegisterRequest:
       example:
-        password: password123
-        role: パパ
         name: 田中太郎
         email: taro@example.com
+        password: password123
+        role: パパ
       properties:
         name:
           example: 田中太郎
@@ -554,8 +554,8 @@ components:
       type: object
     LoginRequest:
       example:
-        password: password
         email: email
+        password: password
       properties:
         email:
           format: email
@@ -606,9 +606,9 @@ components:
       type: object
     UpdateProfileRequest:
       example:
-        icon_url: https://example.com/icon.png
-        role: パパ
         name: 田中太郎
+        role: パパ
+        icon_url: https://example.com/icon.png
       properties:
         name:
           example: 田中太郎
@@ -622,17 +622,18 @@ components:
       type: object
     AuthResponse:
       example:
+        user:
+          id: 0
+          family_id: 6
+          name: name
+          role: role
+          icon_url: icon_url
+          email: email
+          enman_point: 1
+          invite_code: invite_code
+          created_at: 2000-01-23T04:56:07.000+00:00
         access_token: access_token
         refresh_token: refresh_token
-        user:
-          icon_url: icon_url
-          family_id: 6
-          role: role
-          enman_point: 1
-          name: name
-          created_at: 2000-01-23T04:56:07.000+00:00
-          id: 0
-          email: email
       properties:
         user:
           $ref: "#/components/schemas/UserResponse"
@@ -653,14 +654,15 @@ components:
       type: object
     UserResponse:
       example:
-        icon_url: icon_url
-        family_id: 6
-        role: role
-        enman_point: 1
-        name: name
-        created_at: 2000-01-23T04:56:07.000+00:00
         id: 0
+        family_id: 6
+        name: name
+        role: role
+        icon_url: icon_url
         email: email
+        enman_point: 1
+        invite_code: invite_code
+        created_at: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           format: int64
@@ -680,6 +682,9 @@ components:
           type: string
         enman_point:
           type: integer
+        invite_code:
+          nullable: true
+          type: string
         created_at:
           format: date-time
           type: string
@@ -700,15 +705,15 @@ components:
       type: object
     TaskResponse:
       example:
-        family_id: 6
-        done_by: 5
-        done_at: 2000-01-23T04:56:07.000+00:00
-        created_at: 2000-01-23T04:56:07.000+00:00
         id: 0
+        family_id: 6
+        created_by: 1
+        done_by: 5
         title: title
         category: category
-        created_by: 1
         status: pending
+        done_at: 2000-01-23T04:56:07.000+00:00
+        created_at: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           format: int64
@@ -743,8 +748,8 @@ components:
       type: object
     TaskTemplateResponse:
       example:
-        name: name
         id: 0
+        name: name
         category: category
       properties:
         id:
@@ -757,10 +762,10 @@ components:
       type: object
     FamilyResponse:
       example:
-        name: name
-        created_at: 2000-01-23T04:56:07.000+00:00
         id: 0
+        name: name
         invite_code: invite_code
+        created_at: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           format: int64
@@ -775,8 +780,8 @@ components:
       type: object
     SendAppreciationRequest:
       example:
-        message: ピカピカだね！
         stamp_type: great
+        message: ピカピカだね！
       properties:
         stamp_type:
           description: "great: すごい！ / thanks: ありがとう / cute: かわいい / love: 大好き / star:\
@@ -797,16 +802,16 @@ components:
       type: object
     AppreciationResponse:
       example:
+        id: 0
+        task_id: 6
+        task_title: task_title
+        from_user_id: 1
         from_user_name: from_user_name
         to_user_id: 5
         to_user_name: to_user_name
-        task_title: task_title
-        created_at: 2000-01-23T04:56:07.000+00:00
-        task_id: 6
-        id: 0
-        message: message
-        from_user_id: 1
         stamp_type: great
+        message: message
+        created_at: 2000-01-23T04:56:07.000+00:00
       properties:
         id:
           format: int64
@@ -845,8 +850,8 @@ components:
       example:
         user_id: 0
         user_name: user_name
-        count: 6
         category: category
+        count: 6
       properties:
         user_id:
           format: int64
@@ -860,11 +865,11 @@ components:
       type: object
     FamilyGoalResponse:
       example:
+        id: 0
+        title: title
         target_points: 6
         current_points: 1
         created_at: 2000-01-23T04:56:07.000+00:00
-        id: 0
-        title: title
       properties:
         id:
           format: int64
@@ -881,8 +886,8 @@ components:
       type: object
     CreateFamilyGoalRequest:
       example:
-        target_points: 100
         title: 週末の焼肉
+        target_points: 100
       properties:
         title:
           example: 週末の焼肉

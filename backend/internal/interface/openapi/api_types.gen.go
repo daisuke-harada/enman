@@ -253,6 +253,7 @@ type UserResponse struct {
 	FamilyId   *int64     `json:"family_id,omitempty"`
 	IconUrl    *string    `json:"icon_url,omitempty"`
 	Id         *int64     `json:"id,omitempty"`
+	InviteCode *string    `json:"invite_code,omitempty"`
 	Name       *string    `json:"name,omitempty"`
 	Role       *string    `json:"role,omitempty"`
 }

@@ -22,6 +22,9 @@ func NewUserResponse(user *model.User) UserResponse {
 		fid := int64(*user.FamilyID)
 		resp.FamilyId = &fid
 	}
+	if user.Family != nil {
+		resp.InviteCode = &user.Family.InviteCode
+	}
 	return resp
 }
 

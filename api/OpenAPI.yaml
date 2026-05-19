@@ -537,6 +537,9 @@ components:
           type: string
         enman_point:
           type: integer
+        invite_code:
+          type: string
+          nullable: true
         created_at:
           type: string
           format: date-time
