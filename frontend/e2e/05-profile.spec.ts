@@ -41,13 +41,35 @@ test.describe('プロフィール', () => {
     await expect(page.getByText('✓ 保存しました')).toBeVisible({ timeout: 8000 });
   });
 
-  test('家族グループの招待コードセクションが表示される', async ({ page }) => {
+  test('家族グループセクションと招待コードボタンが表示される', async ({ page }) => {
     await page.goto('/profile');
-    await page.waitForTimeout(2000);
-    const hasInvite = await page.getByText('家族グループ').isVisible().catch(() => false);
-    if (hasInvite) {
-      await expect(page.getByText(/招待コードをコピー/)).toBeVisible();
-    }
+    await expect(page.getByText('家族グループ')).toBeVisible({ timeout: 8000 });
+    await expect(page.getByRole('button', { name: /招待コードをコピー/ })).toBeVisible();
+  });
+
+  test('招待コードをコピーボタンをクリックするとコピー済みフィードバックが表示される', async ({ page }) => {
+    await page.goto('/profile');
+    await expect(page.getByRole('button', { name: /招待コードをコピー/ })).toBeVisible({ timeout: 8000 });
+    await page.getByRole('button', { name: /招待コードをコピー/ }).click();
+    await expect(page.getByRole('button', { name: /コピーしました/ })).toBeVisible({ timeout: 3000 });
+  });
+
+  test('コピーフィードバックは2秒後に元のテキストに戻る', async ({ page }) => {
+    await page.goto('/profile');
+    await expect(page.getByRole('button', { name: /招待コードをコピー/ })).toBeVisible({ timeout: 8000 });
+    await page.getByRole('button', { name: /招待コードをコピー/ }).click();
+    await expect(page.getByRole('button', { name: /コピーしました/ })).toBeVisible({ timeout: 3000 });
+    await expect(page.getByRole('button', { name: /招待コードをコピー/ })).toBeVisible({ timeout: 5000 });
+  });
+
+  test('クリップボードに招待コードがコピーされる', async ({ page, context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    await page.goto('/profile');
+    await expect(page.getByRole('button', { name: /招待コードをコピー/ })).toBeVisible({ timeout: 8000 });
+    await page.getByRole('button', { name: /招待コードをコピー/ }).click();
+    await expect(page.getByRole('button', { name: /コピーしました/ })).toBeVisible({ timeout: 3000 });
+    const clipboardText = await page.evaluate(() => navigator.clipboard.readText());
+    expect(clipboardText).toBe('TANAKA000001');
   });
 
   test('モバイルではログアウトボタンが表示される', async ({ page }) => {
