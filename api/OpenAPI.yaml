@@ -28,6 +28,10 @@ tags:
     description: 貢献度統計
   - name: goals
     description: ご褒美目標
+  - name: recurrence-rules
+    description: 繰り返しルール管理
+  - name: calendar
+    description: カレンダー表示
 paths:
   /health:
     $ref: "./paths/health.yaml"
@@ -208,6 +212,55 @@ paths:
                 $ref: "#/components/schemas/TaskResponse"
         default:
           $ref: "./components/schemas/response/default.yaml"
+  /tasks/{taskId}:
+    patch:
+      summary: タスク編集
+      operationId: patchTask
+      tags:
+        - tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+      responses:
+        "200":
+          description: タスク編集成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+    delete:
+      summary: タスク削除
+      operationId: deleteTask
+      tags:
+        - tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: タスク削除成功
+        default:
+          $ref: "./components/schemas/response/default.yaml"
   /tasks/{taskId}/done:
     patch:
       summary: タスク完了報告
@@ -379,6 +432,130 @@ paths:
                 $ref: "#/components/schemas/FamilyGoalResponse"
         default:
           $ref: "./components/schemas/response/default.yaml"
+  /recurrence-rules:
+    get:
+      summary: 繰り返しルール一覧取得
+      operationId: getRecurrenceRules
+      tags:
+        - recurrence-rules
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: 一覧取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecurrenceRuleResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+    post:
+      summary: 繰り返しルール作成
+      operationId: postRecurrenceRules
+      tags:
+        - recurrence-rules
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceRuleRequest"
+      responses:
+        "201":
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceRuleResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+  /recurrence-rules/{ruleId}:
+    patch:
+      summary: 繰り返しルール更新
+      operationId: patchRecurrenceRules
+      tags:
+        - recurrence-rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceRuleRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceRuleResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+    delete:
+      summary: 繰り返しルール削除（以降のインスタンスをすべて終了）
+      operationId: deleteRecurrenceRule
+      tags:
+        - recurrence-rules
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ruleId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: 削除成功
+        default:
+          $ref: "./components/schemas/response/default.yaml"
+  /calendar:
+    get:
+      summary: 月別カレンダー取得（繰り返しタスク展開済み）
+      operationId: getCalendar
+      tags:
+        - calendar
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: year
+          in: query
+          required: true
+          schema:
+            type: integer
+            example: 2026
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 12
+            example: 5
+      responses:
+        "200":
+          description: カレンダー取得成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarDayItem"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
   /users/me:
     get:
       summary: 自分のプロフィール取得
@@ -543,6 +720,18 @@ components:
         created_at:
           type: string
           format: date-time
+    UpdateTaskRequest:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          example: "皿洗い"
+        category:
+          type: string
+          nullable: true
+          example: "キッチン"
     CreateTaskRequest:
       type: object
       required:
@@ -554,6 +743,16 @@ components:
         category:
           type: string
           example: "キッチン"
+        recurrence_rule_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: 繰り返しルールから生成されたインスタンスの場合に設定
+        scheduled_date:
+          type: string
+          format: date
+          nullable: true
+          description: 予定日（繰り返しタスクのインスタンス化日）
     TaskResponse:
       type: object
       properties:
@@ -581,6 +780,14 @@ components:
         done_at:
           type: string
           format: date-time
+          nullable: true
+        recurrence_rule_id:
+          type: integer
+          format: int64
+          nullable: true
+        scheduled_date:
+          type: string
+          format: date
           nullable: true
         created_at:
           type: string
@@ -688,3 +895,125 @@ components:
           type: integer
           minimum: 1
           example: 100
+    RecurrenceRuleRequest:
+      type: object
+      required:
+        - title
+        - frequency
+        - start_date
+      properties:
+        title:
+          type: string
+          example: "皿洗い"
+        category:
+          type: string
+          nullable: true
+          example: "キッチン"
+        frequency:
+          type: string
+          enum: [daily, weekly, monthly]
+          example: "weekly"
+        day_of_week:
+          type: integer
+          minimum: 0
+          maximum: 6
+          nullable: true
+          description: "0=日〜6=土（weekly のみ）"
+        day_of_month:
+          type: integer
+          minimum: 1
+          maximum: 31
+          nullable: true
+          description: "1〜31（monthly 日付指定のみ）"
+        week_of_month:
+          type: integer
+          minimum: 1
+          maximum: 5
+          nullable: true
+          description: "第N週（1〜5、monthly 曜日指定時）"
+        start_date:
+          type: string
+          format: date
+          example: "2026-05-19"
+        end_date:
+          type: string
+          format: date
+          nullable: true
+    RecurrenceRuleResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        family_id:
+          type: integer
+          format: int64
+        created_by:
+          type: integer
+          format: int64
+        title:
+          type: string
+        category:
+          type: string
+          nullable: true
+        frequency:
+          type: string
+          enum: [daily, weekly, monthly]
+        day_of_week:
+          type: integer
+          nullable: true
+        day_of_month:
+          type: integer
+          nullable: true
+        week_of_month:
+          type: integer
+          nullable: true
+          description: "第N週（1〜5）"
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+    CalendarDayItem:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/CalendarTaskItem"
+    CalendarTaskItem:
+      type: object
+      properties:
+        task_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: "実体化済みタスクの ID（まだ完了・作成されていない仮想インスタンスは null）"
+        recurrence_rule_id:
+          type: integer
+          format: int64
+          nullable: true
+        title:
+          type: string
+        category:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [pending, done]
+        user_id:
+          type: integer
+          format: int64
+        user_name:
+          type: string
+        scheduled_date:
+          type: string
+          format: date

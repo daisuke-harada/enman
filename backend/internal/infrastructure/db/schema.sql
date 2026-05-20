@@ -51,13 +51,17 @@ CREATE TABLE tasks (
   category VARCHAR(100),
   status VARCHAR(20) NOT NULL DEFAULT 'pending',
   done_at DATETIME,
+  recurrence_rule_id BIGINT UNSIGNED,
+  scheduled_date DATE,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (id),
   INDEX idx_tasks_family_status (family_id, status),
+  INDEX idx_tasks_scheduled_date (family_id, scheduled_date),
   CONSTRAINT fk_tasks_family_id FOREIGN KEY (family_id) REFERENCES families (id),
   CONSTRAINT fk_tasks_created_by FOREIGN KEY (created_by) REFERENCES users (id),
-  CONSTRAINT fk_tasks_done_by FOREIGN KEY (done_by) REFERENCES users (id)
+  CONSTRAINT fk_tasks_done_by FOREIGN KEY (done_by) REFERENCES users (id),
+  CONSTRAINT fk_tasks_recurrence_rule FOREIGN KEY (recurrence_rule_id) REFERENCES recurrence_rules (id) ON DELETE SET NULL
 );
 
 CREATE TABLE family_goals (
@@ -70,6 +74,26 @@ CREATE TABLE family_goals (
   PRIMARY KEY (id),
   INDEX idx_family_goals_family (family_id),
   CONSTRAINT fk_family_goals_family FOREIGN KEY (family_id) REFERENCES families (id)
+);
+
+CREATE TABLE recurrence_rules (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  family_id BIGINT UNSIGNED NOT NULL,
+  created_by BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  category VARCHAR(100),
+  frequency VARCHAR(20) NOT NULL,
+  day_of_week TINYINT,
+  day_of_month TINYINT,
+  week_of_month TINYINT,
+  start_date DATE NOT NULL,
+  end_date DATE,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_recurrence_rules_family (family_id),
+  CONSTRAINT fk_recurrence_rules_family FOREIGN KEY (family_id) REFERENCES families (id),
+  CONSTRAINT fk_recurrence_rules_created_by FOREIGN KEY (created_by) REFERENCES users (id)
 );
 
 CREATE TABLE appreciations (

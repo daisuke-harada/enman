@@ -13,6 +13,66 @@ const (
 	BearerAuthScopes bearerAuthContextKey = "bearerAuth.Scopes"
 )
 
+// Defines values for CalendarTaskItemStatus.
+const (
+	CalendarTaskItemStatusDone    CalendarTaskItemStatus = "done"
+	CalendarTaskItemStatusPending CalendarTaskItemStatus = "pending"
+)
+
+// Valid indicates whether the value is a known member of the CalendarTaskItemStatus enum.
+func (e CalendarTaskItemStatus) Valid() bool {
+	switch e {
+	case CalendarTaskItemStatusDone:
+		return true
+	case CalendarTaskItemStatusPending:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RecurrenceRuleRequestFrequency.
+const (
+	RecurrenceRuleRequestFrequencyDaily   RecurrenceRuleRequestFrequency = "daily"
+	RecurrenceRuleRequestFrequencyMonthly RecurrenceRuleRequestFrequency = "monthly"
+	RecurrenceRuleRequestFrequencyWeekly  RecurrenceRuleRequestFrequency = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the RecurrenceRuleRequestFrequency enum.
+func (e RecurrenceRuleRequestFrequency) Valid() bool {
+	switch e {
+	case RecurrenceRuleRequestFrequencyDaily:
+		return true
+	case RecurrenceRuleRequestFrequencyMonthly:
+		return true
+	case RecurrenceRuleRequestFrequencyWeekly:
+		return true
+	default:
+		return false
+	}
+}
+
+// Defines values for RecurrenceRuleResponseFrequency.
+const (
+	RecurrenceRuleResponseFrequencyDaily   RecurrenceRuleResponseFrequency = "daily"
+	RecurrenceRuleResponseFrequencyMonthly RecurrenceRuleResponseFrequency = "monthly"
+	RecurrenceRuleResponseFrequencyWeekly  RecurrenceRuleResponseFrequency = "weekly"
+)
+
+// Valid indicates whether the value is a known member of the RecurrenceRuleResponseFrequency enum.
+func (e RecurrenceRuleResponseFrequency) Valid() bool {
+	switch e {
+	case RecurrenceRuleResponseFrequencyDaily:
+		return true
+	case RecurrenceRuleResponseFrequencyMonthly:
+		return true
+	case RecurrenceRuleResponseFrequencyWeekly:
+		return true
+	default:
+		return false
+	}
+}
+
 // Defines values for TaskResponseStatus.
 const (
 	TaskResponseStatusDone    TaskResponseStatus = "done"
@@ -33,16 +93,16 @@ func (e TaskResponseStatus) Valid() bool {
 
 // Defines values for GetTasksParamsStatus.
 const (
-	GetTasksParamsStatusPending   GetTasksParamsStatus = "pending"
-	GetTasksParamsStatusTodayDone GetTasksParamsStatus = "today_done"
+	Pending   GetTasksParamsStatus = "pending"
+	TodayDone GetTasksParamsStatus = "today_done"
 )
 
 // Valid indicates whether the value is a known member of the GetTasksParamsStatus enum.
 func (e GetTasksParamsStatus) Valid() bool {
 	switch e {
-	case GetTasksParamsStatusPending:
+	case Pending:
 		return true
-	case GetTasksParamsStatusTodayDone:
+	case TodayDone:
 		return true
 	default:
 		return false
@@ -69,6 +129,29 @@ type AuthResponse struct {
 	User         *UserResponse `json:"user,omitempty"`
 }
 
+// CalendarDayItem defines model for CalendarDayItem.
+type CalendarDayItem struct {
+	Date  *openapi_types.Date `json:"date,omitempty"`
+	Tasks *[]CalendarTaskItem `json:"tasks,omitempty"`
+}
+
+// CalendarTaskItem defines model for CalendarTaskItem.
+type CalendarTaskItem struct {
+	Category         *string                 `json:"category,omitempty"`
+	RecurrenceRuleId *int64                  `json:"recurrence_rule_id,omitempty"`
+	ScheduledDate    *openapi_types.Date     `json:"scheduled_date,omitempty"`
+	Status           *CalendarTaskItemStatus `json:"status,omitempty"`
+
+	// TaskId 実体化済みタスクの ID（まだ完了・作成されていない仮想インスタンスは null）
+	TaskId   *int64  `json:"task_id,omitempty"`
+	Title    *string `json:"title,omitempty"`
+	UserId   *int64  `json:"user_id,omitempty"`
+	UserName *string `json:"user_name,omitempty"`
+}
+
+// CalendarTaskItemStatus defines model for CalendarTaskItem.Status.
+type CalendarTaskItemStatus string
+
 // ContributionItem defines model for ContributionItem.
 type ContributionItem struct {
 	Category *string `json:"category,omitempty"`
@@ -91,7 +174,13 @@ type CreateFamilyRequest struct {
 // CreateTaskRequest defines model for CreateTaskRequest.
 type CreateTaskRequest struct {
 	Category *string `json:"category,omitempty"`
-	Title    string  `json:"title"`
+
+	// RecurrenceRuleId 繰り返しルールから生成されたインスタンスの場合に設定
+	RecurrenceRuleId *int64 `json:"recurrence_rule_id,omitempty"`
+
+	// ScheduledDate 予定日（繰り返しタスクのインスタンス化日）
+	ScheduledDate *openapi_types.Date `json:"scheduled_date,omitempty"`
+	Title         string              `json:"title"`
 }
 
 // FamilyGoalResponse defines model for FamilyGoalResponse.
@@ -127,6 +216,48 @@ type LogoutRequest struct {
 	RefreshToken string `json:"refresh_token"`
 }
 
+// RecurrenceRuleRequest defines model for RecurrenceRuleRequest.
+type RecurrenceRuleRequest struct {
+	Category *string `json:"category,omitempty"`
+
+	// DayOfMonth 1〜31（monthly 日付指定のみ）
+	DayOfMonth *int `json:"day_of_month,omitempty"`
+
+	// DayOfWeek 0=日〜6=土（weekly のみ）
+	DayOfWeek *int                           `json:"day_of_week,omitempty"`
+	EndDate   *openapi_types.Date            `json:"end_date,omitempty"`
+	Frequency RecurrenceRuleRequestFrequency `json:"frequency"`
+	StartDate openapi_types.Date             `json:"start_date"`
+	Title     string                         `json:"title"`
+
+	// WeekOfMonth 第N週（1〜5、monthly 曜日指定時）
+	WeekOfMonth *int `json:"week_of_month,omitempty"`
+}
+
+// RecurrenceRuleRequestFrequency defines model for RecurrenceRuleRequest.Frequency.
+type RecurrenceRuleRequestFrequency string
+
+// RecurrenceRuleResponse defines model for RecurrenceRuleResponse.
+type RecurrenceRuleResponse struct {
+	Category   *string                          `json:"category,omitempty"`
+	CreatedAt  *time.Time                       `json:"created_at,omitempty"`
+	CreatedBy  *int64                           `json:"created_by,omitempty"`
+	DayOfMonth *int                             `json:"day_of_month,omitempty"`
+	DayOfWeek  *int                             `json:"day_of_week,omitempty"`
+	EndDate    *openapi_types.Date              `json:"end_date,omitempty"`
+	FamilyId   *int64                           `json:"family_id,omitempty"`
+	Frequency  *RecurrenceRuleResponseFrequency `json:"frequency,omitempty"`
+	Id         *int64                           `json:"id,omitempty"`
+	StartDate  *openapi_types.Date              `json:"start_date,omitempty"`
+	Title      *string                          `json:"title,omitempty"`
+
+	// WeekOfMonth 第N週（1〜5）
+	WeekOfMonth *int `json:"week_of_month,omitempty"`
+}
+
+// RecurrenceRuleResponseFrequency defines model for RecurrenceRuleResponse.Frequency.
+type RecurrenceRuleResponseFrequency string
+
 // RefreshRequest defines model for RefreshRequest.
 type RefreshRequest struct {
 	RefreshToken string `json:"refresh_token"`
@@ -147,16 +278,18 @@ type SendAppreciationRequest struct {
 
 // TaskResponse defines model for TaskResponse.
 type TaskResponse struct {
-	Category  *string                 `json:"category,omitempty"`
-	Comments  *[]AppreciationResponse `json:"comments,omitempty"`
-	CreatedAt *time.Time              `json:"created_at,omitempty"`
-	CreatedBy *int64                  `json:"created_by,omitempty"`
-	DoneAt    *time.Time              `json:"done_at,omitempty"`
-	DoneBy    *int64                  `json:"done_by,omitempty"`
-	FamilyId  *int64                  `json:"family_id,omitempty"`
-	Id        *int64                  `json:"id,omitempty"`
-	Status    *TaskResponseStatus     `json:"status,omitempty"`
-	Title     *string                 `json:"title,omitempty"`
+	Category         *string                 `json:"category,omitempty"`
+	Comments         *[]AppreciationResponse `json:"comments,omitempty"`
+	CreatedAt        *time.Time              `json:"created_at,omitempty"`
+	CreatedBy        *int64                  `json:"created_by,omitempty"`
+	DoneAt           *time.Time              `json:"done_at,omitempty"`
+	DoneBy           *int64                  `json:"done_by,omitempty"`
+	FamilyId         *int64                  `json:"family_id,omitempty"`
+	Id               *int64                  `json:"id,omitempty"`
+	RecurrenceRuleId *int64                  `json:"recurrence_rule_id,omitempty"`
+	ScheduledDate    *openapi_types.Date     `json:"scheduled_date,omitempty"`
+	Status           *TaskResponseStatus     `json:"status,omitempty"`
+	Title            *string                 `json:"title,omitempty"`
 }
 
 // TaskResponseStatus defines model for TaskResponse.Status.
@@ -180,6 +313,12 @@ type UpdateProfileRequest struct {
 	IconUrl *string `json:"icon_url,omitempty"`
 	Name    *string `json:"name,omitempty"`
 	Role    *string `json:"role,omitempty"`
+}
+
+// UpdateTaskRequest defines model for UpdateTaskRequest.
+type UpdateTaskRequest struct {
+	Category *string `json:"category,omitempty"`
+	Title    string  `json:"title"`
 }
 
 // UserResponse defines model for UserResponse.
@@ -207,6 +346,12 @@ type GetHealthDefaultResponse struct {
 
 // bearerAuthContextKey is the context key for bearerAuth security scheme
 type bearerAuthContextKey string
+
+// GetCalendarParams defines parameters for GetCalendar.
+type GetCalendarParams struct {
+	Year  int `form:"year" json:"year"`
+	Month int `form:"month" json:"month"`
+}
 
 // GetTasksParams defines parameters for GetTasks.
 type GetTasksParams struct {
@@ -238,8 +383,17 @@ type PostFamiliesGoalsJSONRequestBody = CreateFamilyGoalRequest
 // PostFamiliesJoinJSONRequestBody defines body for PostFamiliesJoin for application/json ContentType.
 type PostFamiliesJoinJSONRequestBody = JoinFamilyRequest
 
+// PostRecurrenceRulesJSONRequestBody defines body for PostRecurrenceRules for application/json ContentType.
+type PostRecurrenceRulesJSONRequestBody = RecurrenceRuleRequest
+
+// PatchRecurrenceRulesJSONRequestBody defines body for PatchRecurrenceRules for application/json ContentType.
+type PatchRecurrenceRulesJSONRequestBody = RecurrenceRuleRequest
+
 // PostTasksJSONRequestBody defines body for PostTasks for application/json ContentType.
 type PostTasksJSONRequestBody = CreateTaskRequest
+
+// PatchTaskJSONRequestBody defines body for PatchTask for application/json ContentType.
+type PatchTaskJSONRequestBody = UpdateTaskRequest
 
 // PostTasksAppreciationJSONRequestBody defines body for PostTasksAppreciation for application/json ContentType.
 type PostTasksAppreciationJSONRequestBody = SendAppreciationRequest

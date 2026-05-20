@@ -7,7 +7,6 @@ import { useLogout } from '@/hooks/useAuth';
 
 const NAV_ITEMS = [
   { href: '/', icon: '🏠', label: 'タスク' },
-  { href: '/tasks/new', icon: '➕', label: 'タスクを追加' },
   { href: '/dashboard', icon: '📊', label: 'ダッシュボード' },
   { href: '/notifications', icon: '🔔', label: '通知' },
   { href: '/profile', icon: '👤', label: 'マイページ' },

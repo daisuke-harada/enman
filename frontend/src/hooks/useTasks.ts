@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTasks, postTasks, patchTasksDone, getTaskTemplates } from '@/api-client';
+import { getTasks, postTasks, patchTask, deleteTask, patchTasksDone, getTaskTemplates } from '@/api-client';
 import type { GetTasksData } from '@/api-client/types.gen';
 
 export const TASKS_KEY = (status?: string) => ['tasks', status ?? 'all'];
@@ -20,13 +20,55 @@ export function useTasks(status?: NonNullable<GetTasksData['query']>['status']) 
 export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ title, category }: { title: string; category?: string }) => {
-      const { data } = await postTasks({ body: { title, category } });
+    mutationFn: async ({
+      title,
+      category,
+      recurrence_rule_id,
+      scheduled_date,
+    }: {
+      title: string;
+      category?: string;
+      recurrence_rule_id?: number;
+      scheduled_date?: string;
+    }) => {
+      const { data } = await postTasks({ body: { title, category, recurrence_rule_id, scheduled_date } });
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: TASKS_KEY() });
       queryClient.invalidateQueries({ queryKey: TASKS_KEY('pending') });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
+export function useUpdateTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ taskId, title, category }: { taskId: number; title: string; category?: string | null }) => {
+      const { data } = await patchTask({ path: { taskId }, body: { title, category: category ?? undefined } });
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY() });
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY('pending') });
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY('today_done') });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
+export function useDeleteTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: number) => {
+      await deleteTask({ path: { taskId } });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY() });
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY('pending') });
+      queryClient.invalidateQueries({ queryKey: TASKS_KEY('today_done') });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
   });
 }
@@ -42,6 +84,7 @@ export function useCompleteTask() {
       queryClient.invalidateQueries({ queryKey: TASKS_KEY() });
       queryClient.invalidateQueries({ queryKey: TASKS_KEY('pending') });
       queryClient.invalidateQueries({ queryKey: TASKS_KEY('today_done') });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
   });
 }

@@ -2,11 +2,22 @@ package handler
 
 import (
 	"net/http"
+	"time"
 
+	openapi_types "github.com/oapi-codegen/runtime/types"
 	iface_openapi "github.com/daisuke-harada/enman/internal/interface/openapi"
 	"github.com/daisuke-harada/enman/internal/usecase"
 	"github.com/labstack/echo/v4"
 )
+
+// toTimePtr は openapi_types.Date をポインタに変換するヘルパー
+func dateToTimePtr(d *openapi_types.Date) *time.Time {
+	if d == nil {
+		return nil
+	}
+	t := d.Time
+	return &t
+}
 
 type PostTasksHandler struct {
 	InputPort usecase.CreateTaskInputPort
@@ -23,11 +34,18 @@ func (h *PostTasksHandler) PostTasks(ctx echo.Context) error {
 		return err
 	}
 
-	out, err := h.InputPort.Execute(ctx.Request().Context(), usecase.CreateTaskInput{
+	input := usecase.CreateTaskInput{
 		Title:         req.Title,
 		Category:      req.Category,
 		CurrentUserID: userID,
-	})
+	}
+	if req.RecurrenceRuleId != nil {
+		id := uint(*req.RecurrenceRuleId)
+		input.RecurrenceRuleID = &id
+	}
+	input.ScheduledDate = dateToTimePtr(req.ScheduledDate)
+
+	out, err := h.InputPort.Execute(ctx.Request().Context(), input)
 	if err != nil {
 		return err
 	}

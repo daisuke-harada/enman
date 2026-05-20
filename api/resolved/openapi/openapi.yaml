@@ -28,6 +28,10 @@ tags:
   name: stats
 - description: ご褒美目標
   name: goals
+- description: 繰り返しルール管理
+  name: recurrence-rules
+- description: カレンダー表示
+  name: calendar
 paths:
   /health:
     get:
@@ -262,6 +266,67 @@ paths:
       summary: タスク作成
       tags:
       - tasks
+  /tasks/{taskId}:
+    delete:
+      operationId: deleteTask
+      parameters:
+      - explode: false
+        in: path
+        name: taskId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: タスク削除成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスク削除
+      tags:
+      - tasks
+    patch:
+      operationId: patchTask
+      parameters:
+      - explode: false
+        in: path
+        name: taskId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+          description: タスク編集成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスク編集
+      tags:
+      - tasks
   /tasks/{taskId}/done:
     patch:
       operationId: patchTasksDone
@@ -469,6 +534,158 @@ paths:
       summary: ご褒美目標作成
       tags:
       - goals
+  /recurrence-rules:
+    get:
+      operationId: getRecurrenceRules
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/RecurrenceRuleResponse"
+                type: array
+          description: 一覧取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 繰り返しルール一覧取得
+      tags:
+      - recurrence-rules
+    post:
+      operationId: postRecurrenceRules
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceRuleRequest"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceRuleResponse"
+          description: 作成成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 繰り返しルール作成
+      tags:
+      - recurrence-rules
+  /recurrence-rules/{ruleId}:
+    delete:
+      operationId: deleteRecurrenceRule
+      parameters:
+      - explode: false
+        in: path
+        name: ruleId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "204":
+          description: 削除成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 繰り返しルール削除（以降のインスタンスをすべて終了）
+      tags:
+      - recurrence-rules
+    patch:
+      operationId: patchRecurrenceRules
+      parameters:
+      - explode: false
+        in: path
+        name: ruleId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecurrenceRuleRequest"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RecurrenceRuleResponse"
+          description: 更新成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 繰り返しルール更新
+      tags:
+      - recurrence-rules
+  /calendar:
+    get:
+      operationId: getCalendar
+      parameters:
+      - explode: true
+        in: query
+        name: year
+        required: true
+        schema:
+          example: 2026
+          type: integer
+        style: form
+      - explode: true
+        in: query
+        name: month
+        required: true
+        schema:
+          example: 5
+          maximum: 12
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CalendarDayItem"
+                type: array
+          description: カレンダー取得成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: 月別カレンダー取得（繰り返しタスク展開済み）
+      tags:
+      - calendar
   /users/me:
     get:
       operationId: getUsersMe
@@ -689,7 +906,7 @@ components:
           format: date-time
           type: string
       type: object
-    CreateTaskRequest:
+    UpdateTaskRequest:
       example:
         title: 皿洗い
         category: キッチン
@@ -699,6 +916,33 @@ components:
           type: string
         category:
           example: キッチン
+          nullable: true
+          type: string
+      required:
+      - title
+      type: object
+    CreateTaskRequest:
+      example:
+        title: 皿洗い
+        category: キッチン
+        recurrence_rule_id: 0
+        scheduled_date: 2000-01-23
+      properties:
+        title:
+          example: 皿洗い
+          type: string
+        category:
+          example: キッチン
+          type: string
+        recurrence_rule_id:
+          description: 繰り返しルールから生成されたインスタンスの場合に設定
+          format: int64
+          nullable: true
+          type: integer
+        scheduled_date:
+          description: 予定日（繰り返しタスクのインスタンス化日）
+          format: date
+          nullable: true
           type: string
       required:
       - title
@@ -713,23 +957,25 @@ components:
         category: category
         status: pending
         done_at: 2000-01-23T04:56:07.000+00:00
+        recurrence_rule_id: 5
+        scheduled_date: 2000-01-23
         created_at: 2000-01-23T04:56:07.000+00:00
         comments:
-        - id: 5
-          task_id: 2
+        - id: 2
+          task_id: 7
           task_title: task_title
-          from_user_id: 7
+          from_user_id: 9
           from_user_name: from_user_name
-          to_user_id: 9
+          to_user_id: 3
           to_user_name: to_user_name
           message: message
           created_at: 2000-01-23T04:56:07.000+00:00
-        - id: 5
-          task_id: 2
+        - id: 2
+          task_id: 7
           task_title: task_title
-          from_user_id: 7
+          from_user_id: 9
           from_user_name: from_user_name
-          to_user_id: 9
+          to_user_id: 3
           to_user_name: to_user_name
           message: message
           created_at: 2000-01-23T04:56:07.000+00:00
@@ -759,6 +1005,14 @@ components:
           type: string
         done_at:
           format: date-time
+          nullable: true
+          type: string
+        recurrence_rule_id:
+          format: int64
+          nullable: true
+          type: integer
+        scheduled_date:
+          format: date
           nullable: true
           type: string
         created_at:
@@ -814,12 +1068,12 @@ components:
       type: object
     AppreciationResponse:
       example:
-        id: 5
-        task_id: 2
+        id: 2
+        task_id: 7
         task_title: task_title
-        from_user_id: 7
+        from_user_id: 9
         from_user_name: from_user_name
-        to_user_id: 9
+        to_user_id: 3
         to_user_name: to_user_name
         message: message
         created_at: 2000-01-23T04:56:07.000+00:00
@@ -902,6 +1156,186 @@ components:
       required:
       - target_points
       - title
+      type: object
+    RecurrenceRuleRequest:
+      example:
+        title: 皿洗い
+        category: キッチン
+        frequency: weekly
+        day_of_week: 0
+        day_of_month: 19
+        week_of_month: 1
+        start_date: 2026-05-19
+        end_date: 2000-01-23
+      properties:
+        title:
+          example: 皿洗い
+          type: string
+        category:
+          example: キッチン
+          nullable: true
+          type: string
+        frequency:
+          enum:
+          - daily
+          - weekly
+          - monthly
+          example: weekly
+          type: string
+        day_of_week:
+          description: 0=日〜6=土（weekly のみ）
+          maximum: 6
+          minimum: 0
+          nullable: true
+          type: integer
+        day_of_month:
+          description: 1〜31（monthly 日付指定のみ）
+          maximum: 31
+          minimum: 1
+          nullable: true
+          type: integer
+        week_of_month:
+          description: 第N週（1〜5、monthly 曜日指定時）
+          maximum: 5
+          minimum: 1
+          nullable: true
+          type: integer
+        start_date:
+          example: 2026-05-19
+          format: date
+          type: string
+        end_date:
+          format: date
+          nullable: true
+          type: string
+      required:
+      - frequency
+      - start_date
+      - title
+      type: object
+    RecurrenceRuleResponse:
+      example:
+        id: 0
+        family_id: 6
+        created_by: 1
+        title: title
+        category: category
+        frequency: daily
+        day_of_week: 5
+        day_of_month: 5
+        week_of_month: 2
+        start_date: 2000-01-23
+        end_date: 2000-01-23
+        created_at: 2000-01-23T04:56:07.000+00:00
+      properties:
+        id:
+          format: int64
+          type: integer
+        family_id:
+          format: int64
+          type: integer
+        created_by:
+          format: int64
+          type: integer
+        title:
+          type: string
+        category:
+          nullable: true
+          type: string
+        frequency:
+          enum:
+          - daily
+          - weekly
+          - monthly
+          type: string
+        day_of_week:
+          nullable: true
+          type: integer
+        day_of_month:
+          nullable: true
+          type: integer
+        week_of_month:
+          description: 第N週（1〜5）
+          nullable: true
+          type: integer
+        start_date:
+          format: date
+          type: string
+        end_date:
+          format: date
+          nullable: true
+          type: string
+        created_at:
+          format: date-time
+          type: string
+      type: object
+    CalendarDayItem:
+      example:
+        date: 2000-01-23
+        tasks:
+        - task_id: 0
+          recurrence_rule_id: 6
+          title: title
+          category: category
+          status: pending
+          user_id: 1
+          user_name: user_name
+          scheduled_date: 2000-01-23
+        - task_id: 0
+          recurrence_rule_id: 6
+          title: title
+          category: category
+          status: pending
+          user_id: 1
+          user_name: user_name
+          scheduled_date: 2000-01-23
+      properties:
+        date:
+          format: date
+          type: string
+        tasks:
+          items:
+            $ref: "#/components/schemas/CalendarTaskItem"
+          type: array
+      type: object
+    CalendarTaskItem:
+      example:
+        task_id: 0
+        recurrence_rule_id: 6
+        title: title
+        category: category
+        status: pending
+        user_id: 1
+        user_name: user_name
+        scheduled_date: 2000-01-23
+      properties:
+        task_id:
+          description: 実体化済みタスクの ID（まだ完了・作成されていない仮想インスタンスは null）
+          format: int64
+          nullable: true
+          type: integer
+        recurrence_rule_id:
+          format: int64
+          nullable: true
+          type: integer
+        title:
+          type: string
+        category:
+          nullable: true
+          type: string
+        status:
+          enum:
+          - pending
+          - done
+          type: string
+        user_id:
+          format: int64
+          type: integer
+        user_name:
+          type: string
+        scheduled_date:
+          format: date
+          type: string
       type: object
     getHealth_200_response:
       example:

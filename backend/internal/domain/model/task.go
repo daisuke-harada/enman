@@ -10,21 +10,24 @@ const (
 )
 
 type Task struct {
-	ID        uint       `gorm:"primaryKey"`
-	FamilyID  uint       `gorm:"not null;index"`
-	CreatedBy uint       `gorm:"not null"`
-	DoneBy    *uint
-	Title     string     `gorm:"not null"`
-	Category  *string
-	Status    TaskStatus `gorm:"not null;default:'pending'"`
-	DoneAt    *time.Time
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID               uint       `gorm:"primaryKey"`
+	FamilyID         uint       `gorm:"not null;index"`
+	CreatedBy        uint       `gorm:"not null"`
+	DoneBy           *uint
+	Title            string     `gorm:"not null"`
+	Category         *string
+	Status           TaskStatus `gorm:"not null;default:'pending'"`
+	DoneAt           *time.Time
+	RecurrenceRuleID *uint
+	ScheduledDate    *time.Time
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 
-	Family       *Family        `gorm:"foreignKey:FamilyID"`
-	Creator      *User          `gorm:"foreignKey:CreatedBy"`
-	Doer         *User          `gorm:"foreignKey:DoneBy"`
-	Appreciations []*Appreciation `gorm:"foreignKey:TaskID"`
+	Family          *Family          `gorm:"foreignKey:FamilyID"`
+	Creator         *User            `gorm:"foreignKey:CreatedBy"`
+	Doer            *User            `gorm:"foreignKey:DoneBy"`
+	RecurrenceRule  *RecurrenceRule  `gorm:"foreignKey:RecurrenceRuleID"`
+	Appreciations   []*Appreciation  `gorm:"foreignKey:TaskID"`
 }
 
 type TaskTemplate struct {

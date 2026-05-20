@@ -1,6 +1,8 @@
 package openapi
 
 import (
+	openapi_types "github.com/oapi-codegen/runtime/types"
+
 	"github.com/daisuke-harada/enman/internal/domain/model"
 	"github.com/daisuke-harada/enman/internal/domain/repository"
 	"github.com/daisuke-harada/enman/internal/usecase"
@@ -144,4 +146,83 @@ func NewFamilyGoalResponse(gwp *usecase.FamilyGoalWithPoints) FamilyGoalResponse
 		CurrentPoints: &gwp.CurrentPoints,
 		CreatedAt:     &gwp.Goal.CreatedAt,
 	}
+}
+
+func NewRecurrenceRuleResponse(rule *model.RecurrenceRule) RecurrenceRuleResponse {
+	id := int64(rule.ID)
+	familyID := int64(rule.FamilyID)
+	createdBy := int64(rule.CreatedBy)
+	freq := RecurrenceRuleResponseFrequency(rule.Frequency)
+	startDate := openapi_types.Date{Time: rule.StartDate}
+	resp := RecurrenceRuleResponse{
+		Id:        &id,
+		FamilyId:  &familyID,
+		CreatedBy: &createdBy,
+		Title:     &rule.Title,
+		Category:  rule.Category,
+		Frequency: &freq,
+		StartDate: &startDate,
+		CreatedAt: &rule.CreatedAt,
+	}
+	if rule.DayOfWeek != nil {
+		dow := int(*rule.DayOfWeek)
+		resp.DayOfWeek = &dow
+	}
+	if rule.DayOfMonth != nil {
+		dom := int(*rule.DayOfMonth)
+		resp.DayOfMonth = &dom
+	}
+	if rule.WeekOfMonth != nil {
+		wom := int(*rule.WeekOfMonth)
+		resp.WeekOfMonth = &wom
+	}
+	if rule.EndDate != nil {
+		ed := openapi_types.Date{Time: *rule.EndDate}
+		resp.EndDate = &ed
+	}
+	return resp
+}
+
+func NewCalendarDayItemResponse(day usecase.CalendarDay) CalendarDayItem {
+	date := openapi_types.Date{Time: day.Date}
+	tasks := make([]CalendarTaskItem, 0, len(day.Tasks))
+	for _, t := range day.Tasks {
+		status := CalendarTaskItemStatus(t.Status)
+		scheduledDate := openapi_types.Date{Time: t.ScheduledDate}
+		userID := int64(t.UserID)
+		item := CalendarTaskItem{
+			Title:         &t.Title,
+			Category:      t.Category,
+			Status:        &status,
+			UserId:        &userID,
+			UserName:      &t.UserName,
+			ScheduledDate: &scheduledDate,
+		}
+		if t.TaskID != nil {
+			tid := int64(*t.TaskID)
+			item.TaskId = &tid
+		}
+		if t.RecurrenceRuleID != nil {
+			rid := int64(*t.RecurrenceRuleID)
+			item.RecurrenceRuleId = &rid
+		}
+		tasks = append(tasks, item)
+	}
+	return CalendarDayItem{
+		Date:  &date,
+		Tasks: &tasks,
+	}
+}
+
+func NewTaskResponseWithSchedule(task *model.Task) TaskResponse {
+	resp := NewTaskResponse(task)
+	if task.RecurrenceRuleID != nil {
+		rid := int64(*task.RecurrenceRuleID)
+		resp.RecurrenceRuleId = &rid
+	}
+	if task.ScheduledDate != nil {
+		sd := openapi_types.Date{Time: *task.ScheduledDate}
+		resp.ScheduledDate = &sd
+	}
+	return resp
 }

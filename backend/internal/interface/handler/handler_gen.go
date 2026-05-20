@@ -3,14 +3,20 @@ package handler
 
 type Handler struct {
 	DeleteAuthLogoutHandler
+	DeleteRecurrenceRuleHandler
+	DeleteTaskHandler
+	GetCalendarHandler
 	GetFamiliesGoalsHandler
 	GetFamilyTimelineHandler
 	GetHealthHandler
 	GetNotificationsHandler
+	GetRecurrenceRulesHandler
 	GetStatsContributionsHandler
 	GetTaskTemplatesHandler
 	GetTasksHandler
 	GetUsersMeHandler
+	PatchRecurrenceRulesHandler
+	PatchTaskHandler
 	PatchTasksDoneHandler
 	PatchUsersMeHandler
 	PostAuthLoginHandler
@@ -19,6 +25,7 @@ type Handler struct {
 	PostFamiliesHandler
 	PostFamiliesGoalsHandler
 	PostFamiliesJoinHandler
+	PostRecurrenceRulesHandler
 	PostTasksHandler
 	PostTasksAppreciationHandler
 }

@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"strings"
+	"time"
 
 	"github.com/daisuke-harada/enman/internal/apperror"
 	"github.com/daisuke-harada/enman/internal/domain/model"
@@ -14,9 +15,11 @@ type CreateTaskInputPort interface {
 }
 
 type CreateTaskInput struct {
-	Title         string
-	Category      *string
-	CurrentUserID uint
+	Title            string
+	Category         *string
+	RecurrenceRuleID *uint
+	ScheduledDate    *time.Time
+	CurrentUserID    uint
 }
 
 func (i *CreateTaskInput) Validate() error {
@@ -54,11 +57,13 @@ func (i *CreateTaskInteractor) Execute(ctx context.Context, input CreateTaskInpu
 	}
 
 	task := &model.Task{
-		FamilyID:  *user.FamilyID,
-		CreatedBy: input.CurrentUserID,
-		Title:     input.Title,
-		Category:  input.Category,
-		Status:    model.TaskStatusPending,
+		FamilyID:         *user.FamilyID,
+		CreatedBy:        input.CurrentUserID,
+		Title:            input.Title,
+		Category:         input.Category,
+		Status:           model.TaskStatusPending,
+		RecurrenceRuleID: input.RecurrenceRuleID,
+		ScheduledDate:    input.ScheduledDate,
 	}
 	if err := i.TaskRepo.Create(ctx, task); err != nil {
 		return nil, apperror.InternalServerError(err)

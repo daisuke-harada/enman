@@ -46,6 +46,9 @@ func (r *taskRepository) Search(ctx context.Context, params repository.TaskSearc
 		endOfDay := startOfDay.Add(24 * time.Hour)
 		db = db.Where("done_at >= ? AND done_at < ?", startOfDay, endOfDay)
 	}
+	if params.ScheduledMonthStart != nil && params.ScheduledMonthEnd != nil {
+		db = db.Where("scheduled_date >= ? AND scheduled_date < ?", *params.ScheduledMonthStart, *params.ScheduledMonthEnd)
+	}
 
 	var tasks []*model.Task
 	if err := db.Preload("Appreciations.FromUser").Order("created_at DESC").Find(&tasks).Error; err != nil {
@@ -56,6 +59,10 @@ func (r *taskRepository) Search(ctx context.Context, params repository.TaskSearc
 
 func (r *taskRepository) Update(ctx context.Context, task *model.Task) error {
 	return r.db.WithContext(ctx).Save(task).Error
+}
+
+func (r *taskRepository) Delete(ctx context.Context, id uint) error {
+	return r.db.WithContext(ctx).Delete(&model.Task{}, id).Error
 }
 
 type taskTemplateRepository struct {

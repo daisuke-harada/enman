@@ -25,6 +25,9 @@ type ServerInterface interface {
 	// ユーザー登録
 	// (POST /auth/register)
 	PostAuthRegister(ctx echo.Context) error
+	// 月別カレンダー取得（繰り返しタスク展開済み）
+	// (GET /calendar)
+	GetCalendar(ctx echo.Context, params GetCalendarParams) error
 	// 家族グループ作成
 	// (POST /families)
 	PostFamilies(ctx echo.Context) error
@@ -46,6 +49,18 @@ type ServerInterface interface {
 	// 通知一覧取得（自分宛の感謝）
 	// (GET /notifications)
 	GetNotifications(ctx echo.Context) error
+	// 繰り返しルール一覧取得
+	// (GET /recurrence-rules)
+	GetRecurrenceRules(ctx echo.Context) error
+	// 繰り返しルール作成
+	// (POST /recurrence-rules)
+	PostRecurrenceRules(ctx echo.Context) error
+	// 繰り返しルール削除（以降のインスタンスをすべて終了）
+	// (DELETE /recurrence-rules/{ruleId})
+	DeleteRecurrenceRule(ctx echo.Context, ruleId int64) error
+	// 繰り返しルール更新
+	// (PATCH /recurrence-rules/{ruleId})
+	PatchRecurrenceRules(ctx echo.Context, ruleId int64) error
 	// 家族の貢献度統計取得
 	// (GET /stats/contributions)
 	GetStatsContributions(ctx echo.Context) error
@@ -58,6 +73,12 @@ type ServerInterface interface {
 	// タスク作成
 	// (POST /tasks)
 	PostTasks(ctx echo.Context) error
+	// タスク削除
+	// (DELETE /tasks/{taskId})
+	DeleteTask(ctx echo.Context, taskId int64) error
+	// タスク編集
+	// (PATCH /tasks/{taskId})
+	PatchTask(ctx echo.Context, taskId int64) error
 	// ありがとうスタンプ送信
 	// (POST /tasks/{taskId}/appreciations)
 	PostTasksAppreciation(ctx echo.Context, taskId int64) error
@@ -112,6 +133,33 @@ func (w *ServerInterfaceWrapper) PostAuthRegister(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostAuthRegister(ctx)
+	return err
+}
+
+// GetCalendar converts echo context to params.
+func (w *ServerInterfaceWrapper) GetCalendar(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCalendarParams
+	// ------------- Required query parameter "year" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "year", ctx.QueryParams(), &params.Year, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter year: %s", err))
+	}
+
+	// ------------- Required query parameter "month" -------------
+
+	err = runtime.BindQueryParameterWithOptions("form", true, true, "month", ctx.QueryParams(), &params.Month, runtime.BindQueryParameterOptions{Type: "integer", Format: ""})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter month: %s", err))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetCalendar(ctx, params)
 	return err
 }
 
@@ -190,6 +238,64 @@ func (w *ServerInterfaceWrapper) GetNotifications(ctx echo.Context) error {
 	return err
 }
 
+// GetRecurrenceRules converts echo context to params.
+func (w *ServerInterfaceWrapper) GetRecurrenceRules(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetRecurrenceRules(ctx)
+	return err
+}
+
+// PostRecurrenceRules converts echo context to params.
+func (w *ServerInterfaceWrapper) PostRecurrenceRules(ctx echo.Context) error {
+	var err error
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PostRecurrenceRules(ctx)
+	return err
+}
+
+// DeleteRecurrenceRule converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteRecurrenceRule(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "ruleId" -------------
+	var ruleId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ruleId", ctx.Param("ruleId"), &ruleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter ruleId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteRecurrenceRule(ctx, ruleId)
+	return err
+}
+
+// PatchRecurrenceRules converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchRecurrenceRules(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "ruleId" -------------
+	var ruleId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "ruleId", ctx.Param("ruleId"), &ruleId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter ruleId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchRecurrenceRules(ctx, ruleId)
+	return err
+}
+
 // GetStatsContributions converts echo context to params.
 func (w *ServerInterfaceWrapper) GetStatsContributions(ctx echo.Context) error {
 	var err error
@@ -240,6 +346,42 @@ func (w *ServerInterfaceWrapper) PostTasks(ctx echo.Context) error {
 
 	// Invoke the callback with all the unmarshaled arguments
 	err = w.Handler.PostTasks(ctx)
+	return err
+}
+
+// DeleteTask converts echo context to params.
+func (w *ServerInterfaceWrapper) DeleteTask(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "taskId" -------------
+	var taskId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "taskId", ctx.Param("taskId"), &taskId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter taskId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.DeleteTask(ctx, taskId)
+	return err
+}
+
+// PatchTask converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchTask(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "taskId" -------------
+	var taskId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "taskId", ctx.Param("taskId"), &taskId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter taskId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchTask(ctx, taskId)
 	return err
 }
 
@@ -352,6 +494,7 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.DELETE(options.BaseURL+"/auth/logout", wrapper.DeleteAuthLogout, options.OperationMiddlewares["deleteAuthLogout"]...)
 	router.POST(options.BaseURL+"/auth/refresh", wrapper.PostAuthRefresh, options.OperationMiddlewares["postAuthRefresh"]...)
 	router.POST(options.BaseURL+"/auth/register", wrapper.PostAuthRegister, options.OperationMiddlewares["postAuthRegister"]...)
+	router.GET(options.BaseURL+"/calendar", wrapper.GetCalendar, options.OperationMiddlewares["getCalendar"]...)
 	router.POST(options.BaseURL+"/families", wrapper.PostFamilies, options.OperationMiddlewares["postFamilies"]...)
 	router.GET(options.BaseURL+"/families/goals", wrapper.GetFamiliesGoals, options.OperationMiddlewares["getFamiliesGoals"]...)
 	router.POST(options.BaseURL+"/families/goals", wrapper.PostFamiliesGoals, options.OperationMiddlewares["postFamiliesGoals"]...)
@@ -359,10 +502,16 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.GET(options.BaseURL+"/family/timeline", wrapper.GetFamilyTimeline, options.OperationMiddlewares["getFamilyTimeline"]...)
 	router.GET(options.BaseURL+"/health", wrapper.GetHealth, options.OperationMiddlewares["getHealth"]...)
 	router.GET(options.BaseURL+"/notifications", wrapper.GetNotifications, options.OperationMiddlewares["getNotifications"]...)
+	router.GET(options.BaseURL+"/recurrence-rules", wrapper.GetRecurrenceRules, options.OperationMiddlewares["getRecurrenceRules"]...)
+	router.POST(options.BaseURL+"/recurrence-rules", wrapper.PostRecurrenceRules, options.OperationMiddlewares["postRecurrenceRules"]...)
+	router.DELETE(options.BaseURL+"/recurrence-rules/:ruleId", wrapper.DeleteRecurrenceRule, options.OperationMiddlewares["deleteRecurrenceRule"]...)
+	router.PATCH(options.BaseURL+"/recurrence-rules/:ruleId", wrapper.PatchRecurrenceRules, options.OperationMiddlewares["patchRecurrenceRules"]...)
 	router.GET(options.BaseURL+"/stats/contributions", wrapper.GetStatsContributions, options.OperationMiddlewares["getStatsContributions"]...)
 	router.GET(options.BaseURL+"/task-templates", wrapper.GetTaskTemplates, options.OperationMiddlewares["getTaskTemplates"]...)
 	router.GET(options.BaseURL+"/tasks", wrapper.GetTasks, options.OperationMiddlewares["getTasks"]...)
 	router.POST(options.BaseURL+"/tasks", wrapper.PostTasks, options.OperationMiddlewares["postTasks"]...)
+	router.DELETE(options.BaseURL+"/tasks/:taskId", wrapper.DeleteTask, options.OperationMiddlewares["deleteTask"]...)
+	router.PATCH(options.BaseURL+"/tasks/:taskId", wrapper.PatchTask, options.OperationMiddlewares["patchTask"]...)
 	router.POST(options.BaseURL+"/tasks/:taskId/appreciations", wrapper.PostTasksAppreciation, options.OperationMiddlewares["postTasksAppreciation"]...)
 	router.PATCH(options.BaseURL+"/tasks/:taskId/done", wrapper.PatchTasksDone, options.OperationMiddlewares["patchTasksDone"]...)
 	router.GET(options.BaseURL+"/users/me", wrapper.GetUsersMe, options.OperationMiddlewares["getUsersMe"]...)
