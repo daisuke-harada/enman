@@ -68,6 +68,21 @@ func NewHandler(container *di.Container) *Handler {
 		PostFamiliesGoalsHandler: PostFamiliesGoalsHandler{
 			InputPort: di.MustInvoke[usecase.CreateFamilyGoalInputPort](container),
 		},
+		GetCalendarHandler: GetCalendarHandler{
+			InputPort: di.MustInvoke[usecase.GetCalendarInputPort](container),
+		},
+		GetRecurrenceRulesHandler: GetRecurrenceRulesHandler{
+			InputPort: di.MustInvoke[usecase.ListRecurrenceRulesInputPort](container),
+		},
+		PostRecurrenceRulesHandler: PostRecurrenceRulesHandler{
+			InputPort: di.MustInvoke[usecase.CreateRecurrenceRuleInputPort](container),
+		},
+		PatchRecurrenceRulesHandler: PatchRecurrenceRulesHandler{
+			InputPort: di.MustInvoke[usecase.UpdateRecurrenceRuleInputPort](container),
+		},
+		DeleteRecurrenceRuleHandler: DeleteRecurrenceRuleHandler{
+			InputPort: di.MustInvoke[usecase.DeleteRecurrenceRuleInputPort](container),
+		},
 		GetHealthHandler: GetHealthHandler{},
 	}
 }
