@@ -23,6 +23,7 @@ function groupByCategory(templates: TaskTemplateResponse[]) {
 
 export default function NewTaskPage() {
   const router = useRouter();
+  const today = new Date().toISOString().slice(0, 10);
   const [title, setTitle] = useState('');
   const [isRecurring, setIsRecurring] = useState(false);
   const [frequency, setFrequency] = useState<RecurrenceFrequency>('daily');
@@ -54,7 +55,7 @@ export default function NewTaskPage() {
         });
         router.push('/calendar');
       } else {
-        await createTask.mutateAsync({ title: title.trim() });
+        await createTask.mutateAsync({ title: title.trim(), scheduled_date: today });
         router.push('/');
       }
     } catch {
@@ -64,7 +65,7 @@ export default function NewTaskPage() {
 
   const handleTemplate = async (tmpl: TaskTemplateResponse) => {
     try {
-      await createTask.mutateAsync({ title: tmpl.name!, category: tmpl.category! });
+      await createTask.mutateAsync({ title: tmpl.name!, category: tmpl.category!, scheduled_date: today });
       router.push('/');
     } catch {
       setError('タスクの作成に失敗しました');

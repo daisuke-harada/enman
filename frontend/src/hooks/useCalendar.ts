@@ -68,6 +68,7 @@ export function useDeleteRecurrenceRule() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: RECURRENCE_RULES_KEY });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
   });
 }

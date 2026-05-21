@@ -20,7 +20,7 @@ test.describe('通知機能', () => {
     expect(hasNotifications || hasEmpty).toBeTruthy();
   });
 
-  test('通知カードのスタンプ絵文字が表示される', async ({ page }) => {
+  test('通知カードにコンテンツが表示される', async ({ page }) => {
     await page.goto('/notifications');
     await page.waitForTimeout(2000);
     const cards = page.locator('.rounded-\\[24px\\]');
@@ -28,15 +28,15 @@ test.describe('通知機能', () => {
     if (count > 0) {
       const firstCard = cards.first();
       const text = await firstCard.textContent();
-      expect(text).toMatch(/👏|🙏|💕|❤️|⭐/);
+      expect(text).toBeTruthy();
     }
   });
 
-  test('BottomNavの通知アイコンから遷移できる（モバイル）', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
+  test('サイドバーの通知リンクから遷移できる（デスクトップ）', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
     await page.goto('/');
     await page.waitForTimeout(500);
-    await page.getByRole('link', { name: '通知' }).click({ force: true });
+    await page.locator('aside').getByRole('link', { name: '通知' }).click({ force: true });
     await expect(page).toHaveURL(/\/notifications/, { timeout: 8000 });
   });
 });

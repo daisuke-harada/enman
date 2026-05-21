@@ -18,19 +18,9 @@ test.describe('ナビゲーション', () => {
       await expect(page).toHaveURL((url) => url.pathname === '/');
     });
 
-    test('タスク追加タブに遷移できる', async ({ page }) => {
-      await page.getByRole('link', { name: '追加' }).click({ force: true });
-      await expect(page).toHaveURL(/\/tasks\/new/, { timeout: 8000 });
-    });
-
     test('統計タブに遷移できる', async ({ page }) => {
       await page.getByRole('link', { name: '統計' }).click({ force: true });
       await expect(page).toHaveURL(/\/dashboard/, { timeout: 8000 });
-    });
-
-    test('通知タブに遷移できる', async ({ page }) => {
-      await page.getByRole('link', { name: '通知' }).click({ force: true });
-      await expect(page).toHaveURL(/\/notifications/, { timeout: 8000 });
     });
 
     test('マイページタブに遷移できる', async ({ page }) => {
@@ -45,7 +35,8 @@ test.describe('ナビゲーション', () => {
     });
 
     test('アクティブタブにインジケータードットが表示される', async ({ page }) => {
-      await expect(page.locator('.w-1.h-1.rounded-full.bg-\\[\\#76C893\\]')).toBeVisible();
+      // BottomNav（nav.fixed）内のアクティブドットに限定して確認
+      await expect(page.locator('nav.fixed .w-1.h-1.rounded-full')).toBeVisible();
     });
   });
 
@@ -60,9 +51,9 @@ test.describe('ナビゲーション', () => {
       await expect(page.locator('aside').getByText('enman')).toBeVisible();
     });
 
-    test('サイドバーからタスク追加に遷移できる', async ({ page }) => {
-      await page.locator('aside').getByRole('link', { name: 'タスクを追加' }).click({ force: true });
-      await expect(page).toHaveURL(/\/tasks\/new/, { timeout: 8000 });
+    test('サイドバーから通知ページに遷移できる', async ({ page }) => {
+      await page.locator('aside').getByRole('link', { name: '通知' }).click({ force: true });
+      await expect(page).toHaveURL(/\/notifications/, { timeout: 8000 });
     });
 
     test('サイドバーからダッシュボードに遷移できる', async ({ page }) => {

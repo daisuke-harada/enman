@@ -8,6 +8,12 @@ export const TEST_USER = {
 };
 
 export async function login(page: Page, email = TEST_USER.email, password = TEST_USER.password) {
+  // nextjs-portal（開発ツールバー）をテスト実行中に非表示にする
+  await page.addInitScript(() => {
+    const s = document.createElement('style');
+    s.textContent = 'nextjs-portal { display: none !important; pointer-events: none !important; }';
+    document.head.appendChild(s);
+  });
   await page.goto('/login');
   await page.waitForSelector('#email', { timeout: 10000 });
   await page.locator('#email').fill(email);

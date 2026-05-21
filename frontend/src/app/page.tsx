@@ -7,7 +7,7 @@ import { AppShell } from '@/components/AppShell';
 import { useCreateTask, useUpdateTask, useDeleteTask, useCompleteTask } from '@/hooks/useTasks';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
 import { useSendAppreciation } from '@/hooks/useAppreciations';
-import { useCalendar, useCreateRecurrenceRule } from '@/hooks/useCalendar';
+import { useCalendar, useCreateRecurrenceRule, useDeleteRecurrenceRule } from '@/hooks/useCalendar';
 import type { TaskResponse, CalendarTaskItem } from '@/api-client/types.gen';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
@@ -264,7 +264,7 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
     setError('');
     try {
       if (recurrence === 'none') {
-        await createTask.mutateAsync({ title: title.trim() });
+        await createTask.mutateAsync({ title: title.trim(), scheduled_date: selectedDate.toISOString().slice(0, 10) });
       } else if (recurrence === 'daily') {
         await createRule.mutateAsync({ title: title.trim(), frequency: 'daily', start_date: startDate });
       } else if (recurrence === 'weekly') {
@@ -313,15 +313,19 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
 }
 
 // ---- タスク編集モーダル ----
+type DeleteMode = null | 'simple' | 'choose';
+
 function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskItem; onClose: () => void }) {
   const title = 'title' in task ? (task.title ?? '') : '';
   const [editTitle, setEditTitle] = useState(title);
   const [error, setError] = useState('');
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleteMode, setDeleteMode] = useState<DeleteMode>(null);
   const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
+  const deleteRule = useDeleteRecurrenceRule();
   const taskId = 'id' in task ? task.id : ('task_id' in task ? task.task_id : undefined);
-  const isPending = updateTask.isPending || deleteTask.isPending;
+  const ruleId = task.recurrence_rule_id ?? undefined;
+  const isPending = updateTask.isPending || deleteTask.isPending || deleteRule.isPending;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -332,7 +336,7 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
     } catch { setError('更新に失敗しました'); }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteSingle = async () => {
     if (!taskId) return;
     try {
       await deleteTask.mutateAsync(taskId);
@@ -340,36 +344,88 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
     } catch { setError('削除に失敗しました'); }
   };
 
+  const handleDeleteAll = async () => {
+    if (!ruleId) return;
+    try {
+      await deleteRule.mutateAsync(ruleId);
+      onClose();
+    } catch { setError('削除に失敗しました'); }
+  };
+
   if (!taskId) return null;
 
-  return (
-    <BottomSheet onClose={onClose} title="タスクを編集">
-      {confirmDelete ? (
+  // --- 繰り返し削除: スコープ選択 ---
+  if (deleteMode === 'choose') {
+    return (
+      <BottomSheet onClose={onClose} title="削除する範囲を選択">
+        <div className="space-y-3">
+          <p className="text-xs text-gray-400 text-center pb-1">「{title}」をどの範囲で削除しますか？</p>
+
+          <motion.button onClick={handleDeleteSingle} disabled={isPending} whileTap={{ scale: 0.97 }}
+            className="w-full flex items-start gap-3 px-4 py-4 rounded-2xl border-2 border-orange-200/80 bg-orange-50/60 hover:bg-orange-100/60 transition-colors text-left disabled:opacity-60">
+            <span className="text-xl shrink-0 mt-0.5">📌</span>
+            <div>
+              <p className="text-sm font-bold text-orange-700">このタスクのみ削除</p>
+              <p className="text-xs text-orange-500/80 mt-0.5 leading-relaxed">この1件だけを削除します。<br />繰り返し設定は維持されます。</p>
+            </div>
+          </motion.button>
+
+          <motion.button onClick={handleDeleteAll} disabled={isPending} whileTap={{ scale: 0.97 }}
+            className="w-full flex items-start gap-3 px-4 py-4 rounded-2xl border-2 border-red-200/80 bg-red-50/60 hover:bg-red-100/60 transition-colors text-left disabled:opacity-60">
+            <span className="text-xl shrink-0 mt-0.5">🗑️</span>
+            <div>
+              <p className="text-sm font-bold text-red-600">繰り返しをすべて削除</p>
+              <p className="text-xs text-red-400/80 mt-0.5 leading-relaxed">この繰り返し設定と、紐づく<br />すべてのタスクを削除します。</p>
+            </div>
+          </motion.button>
+
+          <button onClick={() => setDeleteMode(null)}
+            className="w-full py-3 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">
+            キャンセル
+          </button>
+
+          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+        </div>
+      </BottomSheet>
+    );
+  }
+
+  // --- 通常削除確認 ---
+  if (deleteMode === 'simple') {
+    return (
+      <BottomSheet onClose={onClose} title="タスクを削除">
         <div className="space-y-4">
           <p className="text-sm text-gray-600 text-center py-2">「{title}」を削除しますか？</p>
           <div className="flex gap-2">
-            <button onClick={() => setConfirmDelete(false)} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">戻る</button>
-            <motion.button onClick={handleDelete} disabled={isPending} whileTap={{ scale: 0.96 }}
+            <button onClick={() => setDeleteMode(null)} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">戻る</button>
+            <motion.button onClick={handleDeleteSingle} disabled={isPending} whileTap={{ scale: 0.96 }}
               className="flex-1 bg-red-500 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-60">
               {isPending ? '削除中...' : '削除する'}
             </motion.button>
           </div>
+          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
         </div>
-      ) : (
-        <form onSubmit={handleSave} className="space-y-4">
-          <input type="text" value={editTitle} onChange={(e) => { setEditTitle(e.target.value); setError(''); }} autoFocus
-            className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 transition-all" />
-          {error && <p className="text-xs text-red-500 bg-red-50 rounded-2xl px-4 py-2.5">{error}</p>}
-          <div className="flex gap-2 pt-1">
-            <button type="button" onClick={() => setConfirmDelete(true)} className="py-3.5 px-4 rounded-2xl text-sm font-semibold text-red-400 hover:bg-red-50 transition-colors">削除</button>
-            <button type="button" onClick={onClose} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">キャンセル</button>
-            <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.96 }}
-              className="flex-1 bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
-              {isPending ? '保存中...' : '保存する'}
-            </motion.button>
-          </div>
-        </form>
-      )}
+      </BottomSheet>
+    );
+  }
+
+  // --- 編集フォーム ---
+  return (
+    <BottomSheet onClose={onClose} title="タスクを編集">
+      <form onSubmit={handleSave} className="space-y-4">
+        <input type="text" value={editTitle} onChange={(e) => { setEditTitle(e.target.value); setError(''); }} autoFocus
+          className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 transition-all" />
+        {error && <p className="text-xs text-red-500 bg-red-50 rounded-2xl px-4 py-2.5">{error}</p>}
+        <div className="flex gap-2 pt-1">
+          <button type="button" onClick={() => setDeleteMode(ruleId ? 'choose' : 'simple')}
+            className="py-3.5 px-4 rounded-2xl text-sm font-semibold text-red-400 hover:bg-red-50 transition-colors">削除</button>
+          <button type="button" onClick={onClose} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">キャンセル</button>
+          <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.96 }}
+            className="flex-1 bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
+            {isPending ? '保存中...' : '保存する'}
+          </motion.button>
+        </div>
+      </form>
     </BottomSheet>
   );
 }
@@ -613,7 +669,7 @@ function DesktopInlineTaskForm({ selectedDate }: { selectedDate: Date }) {
     setError('');
     try {
       if (recurrence === 'none') {
-        await createTask.mutateAsync({ title: title.trim() });
+        await createTask.mutateAsync({ title: title.trim(), scheduled_date: startDate });
       } else if (recurrence === 'daily') {
         await createRule.mutateAsync({ title: title.trim(), frequency: 'daily', start_date: startDate });
       } else if (recurrence === 'weekly') {
@@ -772,19 +828,19 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="px-4 space-y-3 pb-6">
-          {/* 週バー */}
-          <div className="bg-white rounded-[24px] px-3 py-3 shadow-card border border-white/60">
-            <div className="flex items-center justify-between mb-2 px-1">
-              <button onClick={() => goWeek(-1)} className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] hover:bg-[#F0FBF4] transition-colors text-lg">‹</button>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-gray-600">{weekLabel}</span>
+        <div className="px-4 space-y-2.5 pb-6">
+          {/* 週バー（コンパクト） */}
+          <div className="bg-white/90 rounded-[20px] px-2.5 py-2 shadow-sm border border-white/60">
+            <div className="flex items-center justify-between mb-1.5 px-0.5">
+              <button onClick={() => goWeek(-1)} className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] transition-colors text-base">‹</button>
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-bold text-gray-500">{weekLabel}</span>
                 <button onClick={() => setSelectedDate(new Date())}
-                  className="text-[10px] font-semibold text-[#52B788] bg-[#76C893]/10 px-2 py-0.5 rounded-full hover:bg-[#76C893]/20 transition-colors">今日</button>
+                  className="text-[10px] font-semibold text-[#52B788] bg-[#76C893]/10 px-1.5 py-0.5 rounded-full hover:bg-[#76C893]/20 transition-colors">今日</button>
                 <button onClick={() => setShowCalendar(true)}
-                  className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] hover:bg-[#F0FBF4] transition-colors text-base">📅</button>
+                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#52B788] transition-colors text-sm">📅</button>
               </div>
-              <button onClick={() => goWeek(1)} className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] hover:bg-[#F0FBF4] transition-colors text-lg">›</button>
+              <button onClick={() => goWeek(1)} className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] transition-colors text-base">›</button>
             </div>
             <div ref={weekRef} className="grid grid-cols-7 gap-0.5">
               {weekDays.map((date) => {
@@ -796,16 +852,16 @@ export default function HomePage() {
                 const hasPending = tasks.some(t => t.status === 'pending');
                 return (
                   <motion.button key={dateStr} onClick={() => setSelectedDate(date)} whileTap={{ scale: 0.92 }}
-                    className={`flex flex-col items-center py-2 rounded-2xl transition-all ${isSelected ? 'bg-gradient-to-b from-[#76C893]/20 to-[#52B788]/10 ring-1 ring-[#76C893]/60' : isToday ? 'bg-[#E8F8EE]' : 'hover:bg-[#F7FDF9]'}`}>
-                    <span className={`text-[10px] font-semibold mb-0.5 ${date.getDay() === 0 ? 'text-red-400' : date.getDay() === 6 ? 'text-blue-400' : 'text-gray-400'}`}>
+                    className={`flex flex-col items-center py-1.5 rounded-xl transition-all ${isSelected ? 'bg-gradient-to-b from-[#76C893]/20 to-[#52B788]/10 ring-1 ring-[#76C893]/60' : isToday ? 'bg-[#E8F8EE]' : 'hover:bg-[#F7FDF9]'}`}>
+                    <span className={`text-[9px] font-semibold mb-0.5 ${date.getDay() === 0 ? 'text-red-400' : date.getDay() === 6 ? 'text-blue-400' : 'text-gray-400'}`}>
                       {WEEKDAYS[date.getDay()]}
                     </span>
-                    <span className={`text-sm font-bold w-7 h-7 flex items-center justify-center rounded-full leading-none ${isToday ? 'bg-gradient-to-br from-[#76C893] to-[#52B788] text-white shadow-sm' : isSelected ? 'text-[#52B788]' : 'text-gray-700'}`}>
+                    <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full leading-none ${isToday ? 'bg-gradient-to-br from-[#76C893] to-[#52B788] text-white shadow-sm' : isSelected ? 'text-[#52B788]' : 'text-gray-700'}`}>
                       {date.getDate()}
                     </span>
-                    <div className="flex gap-0.5 mt-1 h-1.5 items-center">
-                      {hasDone && <span className="w-1.5 h-1.5 rounded-full bg-[#76C893]" />}
-                      {hasPending && <span className="w-1.5 h-1.5 rounded-full bg-[#76C893]/30" />}
+                    <div className="flex gap-0.5 mt-0.5 h-1 items-center">
+                      {hasDone && <span className="w-1 h-1 rounded-full bg-[#76C893]" />}
+                      {hasPending && <span className="w-1 h-1 rounded-full bg-[#76C893]/30" />}
                     </div>
                   </motion.button>
                 );
@@ -814,12 +870,12 @@ export default function HomePage() {
           </div>
 
           {/* 日付ラベル */}
-          <div className="flex items-center justify-between px-1">
+          <div className="flex items-center justify-between px-0.5">
             <p className="text-sm font-bold text-gray-800">
               {selectedDate.getMonth() + 1}月{selectedDate.getDate()}日（{WEEKDAYS[selectedDate.getDay()]}）
-              {isSameDay(selectedDate, today) && <span className="ml-2 text-[10px] text-[#52B788] font-semibold bg-[#76C893]/10 px-2 py-0.5 rounded-full">今日</span>}
+              {isSameDay(selectedDate, today) && <span className="ml-1.5 text-[10px] text-[#52B788] font-semibold bg-[#76C893]/10 px-1.5 py-0.5 rounded-full">今日</span>}
             </p>
-            <span className="text-xs text-gray-400">{dayTasks.length > 0 ? `${doneTasks} / ${dayTasks.length} 完了` : ''}</span>
+            <span className="text-xs text-gray-400">{dayTasks.length > 0 ? `${doneTasks}/${dayTasks.length} 完了` : ''}</span>
           </div>
 
           {/* タスクリスト */}
@@ -884,71 +940,47 @@ export default function HomePage() {
           デスクトップレイアウト (≥ lg)
           ════════════════════════════════════ */}
       <div className="hidden lg:flex lg:flex-col h-screen overflow-hidden bg-[#F8FBF9]">
-        {/* デスクトップヘッダー */}
-        <header className="shrink-0 px-8 py-4 flex items-center justify-between bg-white border-b border-gray-100/80 shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+        {/* デスクトップヘッダー: 選択日付 + 今日ボタン */}
+        <header className="shrink-0 px-6 py-3 flex items-center justify-between bg-white/90 backdrop-blur border-b border-gray-100/80">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-2xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-sm">
-              <span className="text-lg">🍏</span>
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-gray-800 leading-tight">enman</h1>
-              {user && <p className="text-xs text-gray-400 leading-tight">{user.name}（{user.role}）</p>}
-            </div>
+            <h2 className="text-xl font-bold text-gray-800">
+              {selectedDate.getMonth() + 1}月{selectedDate.getDate()}日
+              <span className="text-base font-normal text-gray-400 ml-1.5">（{WEEKDAYS[selectedDate.getDay()]}）</span>
+            </h2>
+            {isSameDay(selectedDate, today) && (
+              <span className="text-xs text-[#52B788] font-semibold bg-[#76C893]/10 px-2.5 py-0.5 rounded-full">今日</span>
+            )}
+            {dayTasks.length > 0 && (
+              <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full">{doneTasks}/{dayTasks.length} 完了</span>
+            )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {user && <span className="text-xs text-gray-400">{user.name}（{user.role}）</span>}
             <button onClick={() => setSelectedDate(new Date())}
-              className="text-sm font-semibold text-[#52B788] bg-[#76C893]/10 px-5 py-2 rounded-xl hover:bg-[#76C893]/20 transition-colors">
+              className="text-sm font-semibold text-[#52B788] bg-[#76C893]/10 px-4 py-1.5 rounded-xl hover:bg-[#76C893]/20 transition-colors">
               今日
             </button>
           </div>
         </header>
 
-        {/* 2カラムメインエリア */}
-        <div className="flex-1 min-h-0 grid grid-cols-[1fr_400px] gap-5 p-6">
+        {/* 2カラム: タスクリストがメイン */}
+        <div className="flex-1 min-h-0 grid grid-cols-2 gap-4 p-5">
 
-          {/* 左カラム: 月間カレンダー */}
-          <DesktopMonthCalendar
-            year={calYear} month={calMonth}
-            dayTaskMap={dayTaskMap}
-            selectedDate={selectedDate}
-            onSelectDate={setSelectedDate}
-            onPrevMonth={prevMonth}
-            onNextMonth={nextMonth}
-          />
-
-          {/* 右カラム: 当日詳細 + タスク登録フォーム */}
+          {/* 左カラム（メイン）: タスクリスト + 登録フォーム */}
           <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
 
-            {/* 当日詳細パネル */}
-            <div className="bg-white rounded-[28px] p-5 shadow-[0_2px_20px_rgba(0,0,0,0.05)] border border-gray-100/60">
-              {/* 日付ヘッダー + プログレス */}
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-800 leading-tight">
-                    {selectedDate.getMonth() + 1}月{selectedDate.getDate()}日
-                    <span className="text-base font-medium text-gray-400 ml-1.5">（{WEEKDAYS[selectedDate.getDay()]}）</span>
-                  </h2>
-                  {isSameDay(selectedDate, today) && (
-                    <span className="inline-block mt-1 text-xs text-[#52B788] font-semibold bg-[#76C893]/10 px-2.5 py-0.5 rounded-full">今日</span>
-                  )}
-                </div>
-                <div className="flex flex-col items-center gap-1">
-                  <ProgressRing done={doneTasks} total={dayTasks.length} />
-                  <p className="text-xs text-gray-400">{doneTasks}/{dayTasks.length} 完了</p>
-                </div>
-              </div>
-
-              {/* タスクリスト */}
+            {/* タスクリストパネル */}
+            <div className="bg-white rounded-[28px] p-5 shadow-[0_2px_20px_rgba(0,0,0,0.05)] border border-gray-100/60 flex-1 min-h-0 overflow-y-auto">
               {isLoading ? (
-                <div className="text-center py-8 text-gray-400 text-sm">読み込み中...</div>
+                <div className="text-center py-12 text-gray-400 text-sm">読み込み中...</div>
               ) : dayTasks.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-3xl mb-2">📭</p>
+                <div className="text-center py-12">
+                  <p className="text-4xl mb-3">📭</p>
                   <p className="text-sm text-gray-400">この日のタスクはありません</p>
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
-                  <div className="space-y-2">
+                  <div className="space-y-2.5">
                     {dayTasks.map((task, i) => {
                       const isDone = task.status === 'done';
                       const isVirtual = !task.task_id;
@@ -957,32 +989,29 @@ export default function HomePage() {
                         <motion.div key={`${task.recurrence_rule_id ?? 'task'}-${i}`}
                           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 16 }}
                           transition={{ delay: i * 0.03 }}
-                          className={`flex items-center gap-3 px-3 py-2.5 rounded-2xl border transition-colors ${
+                          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${
                             isDone ? 'bg-[#F7FDF9] border-[#76C893]/15' : 'bg-gray-50/70 border-gray-100 hover:bg-[#F0FBF4]/60'
                           }`}>
 
-                          {/* DONEボタン */}
                           <motion.button onClick={() => !isDone && handleComplete(task)} whileTap={!isDone ? { scale: 0.85 } : {}}
-                            className={`shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                            className={`shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
                               isDone
                                 ? 'border-[#76C893] bg-gradient-to-br from-[#76C893] to-[#52B788] shadow-sm'
                                 : 'border-[#76C893]/40 hover:border-[#76C893] hover:bg-[#76C893]/5 cursor-pointer'
                             }`}>
-                            {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-xs font-bold">✓</motion.span>}
+                            {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-sm font-bold">✓</motion.span>}
                           </motion.button>
 
-                          {/* タスク情報 */}
                           <button onClick={() => canEdit && setEditingTask(task)} className={`flex-1 min-w-0 text-left ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <p className={`text-sm font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</p>
+                              <p className={`text-base font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</p>
                               {task.recurrence_rule_id && <span className="shrink-0 text-gray-300 text-xs">🔁</span>}
                               {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-gray-300 border border-gray-200 px-1.5 py-0.5 rounded-full">予定</span>}
                             </div>
-                            {task.category && <span className="text-[10px] text-[#76C893] font-medium">{task.category}</span>}
+                            {task.category && <span className="text-[11px] text-[#76C893] font-medium">{task.category}</span>}
                           </button>
 
-                          {/* DONEバッジ */}
-                          {isDone && <span className="shrink-0 text-[10px] font-bold text-[#52B788] bg-[#76C893]/10 px-2 py-1 rounded-full">DONE</span>}
+                          {isDone && <span className="shrink-0 text-[10px] font-bold text-[#52B788] bg-[#76C893]/10 px-2.5 py-1 rounded-full">DONE</span>}
                         </motion.div>
                       );
                     })}
@@ -994,6 +1023,16 @@ export default function HomePage() {
             {/* インラインタスク登録フォーム */}
             <DesktopInlineTaskForm selectedDate={selectedDate} />
           </div>
+
+          {/* 右カラム（ナビ）: コンパクト月カレンダー */}
+          <DesktopMonthCalendar
+            year={calYear} month={calMonth}
+            dayTaskMap={dayTaskMap}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
         </div>
       </div>
 

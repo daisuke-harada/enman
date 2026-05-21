@@ -22,7 +22,7 @@ test.describe('認証機能', () => {
   test('有効な認証情報でログイン成功', async ({ page }) => {
     await login(page);
     await expect(page).toHaveURL((url) => url.pathname === '/');
-    await expect(page.getByText('これからやること')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('button', { name: '今日' }).first()).toBeVisible({ timeout: 10000 });
   });
 
   test('新規登録タブに切り替わる', async ({ page }) => {

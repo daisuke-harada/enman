@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
   },
   // monorepo 内での配置による workspace root 誤検知を防ぐ
   outputFileTracingRoot: path.join(__dirname, '../../'),
+  // E2Eテストでnextjs-portalがクリックを横取りするのを防ぐため開発ツールバーを無効化
+  devIndicators: false,
 };
 
 export default nextConfig;
