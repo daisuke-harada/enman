@@ -10,8 +10,9 @@ import (
 )
 
 const (
+	PointCompleteTask        = 1
 	PointSendAppreciation    = 1
-	PointReceiveAppreciation = 3
+	PointReceiveAppreciation = 1
 )
 
 type SendAppreciationInputPort interface {

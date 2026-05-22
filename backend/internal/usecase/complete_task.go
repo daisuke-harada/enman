@@ -59,5 +59,10 @@ func (i *CompleteTaskInteractor) Execute(ctx context.Context, input CompleteTask
 		return nil, apperror.InternalServerError(err)
 	}
 
+	user.EnmanPoint += PointCompleteTask
+	if err := i.UserRepo.Update(ctx, user); err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+
 	return &CompleteTaskOutput{Task: task}, nil
 }
