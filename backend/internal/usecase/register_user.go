@@ -37,6 +37,8 @@ func (i *RegisterUserInput) Validate() error {
 	}
 	if strings.TrimSpace(i.Role) == "" {
 		errs = append(errs, "役割を入力してください")
+	} else if len([]rune(i.Role)) > 20 {
+		errs = append(errs, "役割は20文字以内で入力してください")
 	}
 	if len(errs) > 0 {
 		return apperror.UnprocessableEntity(errs...)

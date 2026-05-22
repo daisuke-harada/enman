@@ -8,7 +8,7 @@ test.describe('家族グループセットアップ', () => {
 
     const email = `setup_test_${Date.now()}@example.com`;
     await page.locator('#reg-name').fill('セットアップテスト');
-    await page.locator('#reg-role').selectOption('その他');
+    await page.locator('#reg-role').fill('その他');
     await page.locator('#email').fill(email);
     await page.locator('#password').fill('testpass123');
     await page.locator('form button[type="submit"]').click();
@@ -26,7 +26,7 @@ test.describe('家族グループセットアップ', () => {
     await page.waitForSelector('#reg-name');
     const email = `join_test_${Date.now()}@example.com`;
     await page.locator('#reg-name').fill('参加テスト');
-    await page.locator('#reg-role').selectOption('その他');
+    await page.locator('#reg-role').fill('その他');
     await page.locator('#email').fill(email);
     await page.locator('#password').fill('testpass123');
     await page.locator('form button[type="submit"]').click();
@@ -43,7 +43,7 @@ test.describe('家族グループセットアップ', () => {
     await page.waitForSelector('#reg-name');
     const email = `invalid_code_test_${Date.now()}@example.com`;
     await page.locator('#reg-name').fill('コードテスト');
-    await page.locator('#reg-role').selectOption('その他');
+    await page.locator('#reg-role').fill('その他');
     await page.locator('#email').fill(email);
     await page.locator('#password').fill('testpass123');
     await page.locator('form button[type="submit"]').click();
@@ -62,7 +62,7 @@ test.describe('家族グループセットアップ', () => {
     await page.waitForSelector('#reg-name');
     const email = `valid_code_test_${Date.now()}@example.com`;
     await page.locator('#reg-name').fill('参加テスト2');
-    await page.locator('#reg-role').selectOption('その他');
+    await page.locator('#reg-role').fill('その他');
     await page.locator('#email').fill(email);
     await page.locator('#password').fill('testpass123');
     await page.locator('form button[type="submit"]').click();

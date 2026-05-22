@@ -41,6 +41,9 @@ func (i *UpdateProfileInteractor) Execute(ctx context.Context, input UpdateProfi
 		user.Name = *input.Name
 	}
 	if input.Role != nil {
+		if len([]rune(*input.Role)) > 20 {
+			return nil, apperror.UnprocessableEntity("役割は20文字以内で入力してください")
+		}
 		user.Role = *input.Role
 	}
 	if input.IconURL != nil {

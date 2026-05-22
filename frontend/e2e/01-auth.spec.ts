@@ -38,7 +38,7 @@ test.describe('認証機能', () => {
     await page.waitForSelector('#reg-name');
     const email = `e2e_reg_${Date.now()}@example.com`;
     await page.locator('#reg-name').fill('テストユーザー');
-    await page.locator('#reg-role').selectOption('その他');
+    await page.locator('#reg-role').fill('その他');
     await page.locator('#email').fill(email);
     await page.locator('#password').fill('testpass123');
     await page.locator('form button[type="submit"]').click();

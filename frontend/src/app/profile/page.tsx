@@ -111,16 +111,15 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label htmlFor="profile-role" className="block text-xs font-semibold text-gray-500 mb-1.5">役割</label>
-                <select
+                <input
                   id="profile-role"
+                  type="text"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
+                  maxLength={20}
+                  placeholder="例：パパ、夫、おとうさん"
                   className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
-                >
-                  {['パパ', 'ママ', '長男', '長女', '次男', '次女', 'その他'].map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
+                />
               </div>
               <motion.button
                 type="submit"
