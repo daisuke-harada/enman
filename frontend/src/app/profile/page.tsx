@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { User, Copy, LogOut } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { useCurrentUser, useUpdateProfile } from '@/hooks/useCurrentUser';
 import { useLogout } from '@/hooks/useAuth';
@@ -53,8 +54,8 @@ export default function ProfilePage() {
       >
         <div className="md:hidden">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-md">
-              <span className="text-base">👤</span>
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#2EC58A] to-[#15A06E] flex items-center justify-center shadow-md">
+              <User size={16} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-xl font-bold text-gray-800">マイページ</h1>
           </div>
@@ -73,18 +74,18 @@ export default function ProfilePage() {
             transition={{ duration: 0.3, ease: 'easeOut' }}
             className="bg-white/80 backdrop-blur-md rounded-[32px] p-6 shadow-card border border-white/60 flex flex-col items-center gap-4"
           >
-            <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#76C893]/30 to-[#52B788]/20 flex items-center justify-center text-4xl shadow-inner">
-              👤
+            <div className="w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#2EC58A]/30 to-[#15A06E]/20 flex items-center justify-center shadow-inner">
+              <User size={40} className="text-[#2EC58A]" strokeWidth={1.5} />
             </div>
             <div className="text-center">
               <p className="font-bold text-gray-800 text-lg">{user?.name}</p>
-              <span className="inline-block mt-1 text-xs font-medium text-[#76C893] bg-[#76C893]/10 px-3 py-0.5 rounded-full">
+              <span className="inline-block mt-1 text-xs font-medium text-[#2EC58A] bg-[#2EC58A]/10 px-3 py-0.5 rounded-full">
                 {user?.role}
               </span>
             </div>
-            <div className="w-full bg-gradient-to-r from-[#FF9E00]/10 to-[#FFB74D]/10 border border-[#FF9E00]/20 rounded-2xl px-5 py-3 text-center">
-              <p className="text-xs text-[#FF9E00] font-semibold mb-0.5">円満ポイント</p>
-              <p className="text-3xl font-bold text-[#FF9E00]">{user?.enman_point ?? 0}
+            <div className="w-full bg-gradient-to-r from-[#FF6F9C]/10 to-[#E84E80]/10 border border-[#FF6F9C]/20 rounded-2xl px-5 py-3 text-center">
+              <p className="text-xs text-[#FF6F9C] font-semibold mb-0.5">円満ポイント</p>
+              <p className="text-3xl font-bold text-[#FF6F9C]">{user?.enman_point ?? 0}
                 <span className="text-base font-semibold ml-1">pt</span>
               </p>
             </div>
@@ -106,7 +107,7 @@ export default function ProfilePage() {
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+                  className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all"
                 />
               </div>
               <div>
@@ -118,14 +119,14 @@ export default function ProfilePage() {
                   onChange={(e) => setRole(e.target.value)}
                   maxLength={20}
                   placeholder="例：パパ、夫、おとうさん"
-                  className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+                  className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all"
                 />
               </div>
               <motion.button
                 type="submit"
                 disabled={updateProfile.isPending}
                 whileTap={{ scale: 0.97 }}
-                className="w-full bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 transition-opacity disabled:opacity-60"
+                className="w-full bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 transition-opacity disabled:opacity-60"
               >
                 <AnimatePresence mode="wait">
                   {saved ? (
@@ -158,9 +159,12 @@ export default function ProfilePage() {
               <motion.button
                 onClick={handleCopyInviteCode}
                 whileTap={{ scale: 0.97 }}
-                className="w-full border-2 border-dashed border-[#76C893]/30 rounded-2xl py-4 text-sm text-[#52B788] font-medium hover:bg-[#76C893]/5 transition-colors"
+                className="w-full border-2 border-dashed border-[#2EC58A]/30 rounded-2xl py-4 text-sm text-[#15A06E] font-medium hover:bg-[#2EC58A]/5 transition-colors"
               >
-                {copied ? '✓ コピーしました！' : '📋 招待コードをコピー（家族を誘う）'}
+                <span className="flex items-center justify-center gap-2">
+                  <Copy size={15} strokeWidth={2} />
+                  {copied ? 'コピーしました！' : '招待コードをコピー（家族を誘う）'}
+                </span>
               </motion.button>
             </motion.div>
           )}
@@ -172,7 +176,10 @@ export default function ProfilePage() {
             whileTap={{ scale: 0.97 }}
             className="w-full border border-red-200 text-red-400 font-medium py-3.5 rounded-2xl text-sm hover:bg-red-50/80 transition-colors disabled:opacity-50 md:hidden"
           >
-            {logout.isPending ? 'ログアウト中...' : '↩ ログアウト'}
+            <span className="flex items-center justify-center gap-2">
+              <LogOut size={15} strokeWidth={2} />
+              {logout.isPending ? 'ログアウト中...' : 'ログアウト'}
+            </span>
           </motion.button>
         </div>
       )}

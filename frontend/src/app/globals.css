@@ -1,16 +1,147 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   enman（円満）Design System — Colors & Type
+   ============================================================ */
+
+:root {
+  /* ---- Brand: Primary (emerald-mint) ---- */
+  --primary:        #2EC58A;
+  --primary-light:  #93E5BF;
+  --primary-dark:   #15A06E;
+  --primary-grad:   linear-gradient(135deg, #2EC58A, #15A06E);
+
+  /* ---- Brand: Accent (rose-pink) ---- */
+  --accent:         #FF6F9C;
+  --accent-light:   #FFA6C6;
+  --accent-dark:    #E84E80;
+  --accent-grad:    linear-gradient(135deg, #FF6F9C, #E84E80);
+
+  /* ---- Surfaces & background ---- */
+  --base:           #FFFCF6;
+  --bg-warm-grad:   linear-gradient(160deg, #FFFCF6 0%, #F2FFF9 50%, #FFFDF7 100%);
+  --surface:        #FFFFFF;
+  --surface-glass:  rgba(255, 255, 255, 0.80);
+  --surface-tint:   #FAFFFD;
+  --surface-tint-2: #EFFCF6;
+  --surface-today:  #E6FAEF;
+
+  /* ---- Text ---- */
+  --fg1:            #3A4658;
+  --fg2:            #586577;
+  --fg3:            #8893A2;
+  --fg4:            #AEB8C4;
+  --fg-on-primary:  #FFFFFF;
+  --fg-on-accent:   #FFFFFF;
+
+  /* ---- Semantic ---- */
+  --success:        #2EC58A;
+  --danger:         #F56565;
+  --danger-soft:    #FC8181;
+  --danger-bg:      #FFF5F5;
+  --weekend-sun:    #F87171;
+  --weekend-sat:    #60A5FA;
+
+  /* ---- Borders ---- */
+  --border-soft:    rgba(0, 0, 0, 0.06);
+  --border-card:    rgba(255, 255, 255, 0.60);
+  --border-input:   rgba(203, 213, 224, 0.80);
+  --border-primary: rgba(46, 197, 138, 0.40);
+
+  /* ---- Shadows ---- */
+  --shadow-soft:  0 4px 24px 0 rgba(46, 197, 138, 0.15);
+  --shadow-card:  0 2px 16px 0 rgba(255, 111, 156, 0.08);
+  --shadow-float: 0 8px 32px 0 rgba(46, 197, 138, 0.25);
+  --shadow-btn:   0 8px 20px -6px rgba(46, 197, 138, 0.50);
+
+  /* ---- Radii ---- */
+  --r-sm:   0.75rem;
+  --r-md:   1rem;
+  --r-lg:   1.375rem;
+  --r-xl:   1.75rem;
+  --r-2xl:  2rem;
+  --r-pill: 9999px;
+
+  /* ---- Spacing ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+
+  /* ---- Type ---- */
+  --font-sans: 'Noto Sans JP', -apple-system, 'Hiragino Kaku Gothic ProN',
+               'Hiragino Sans', 'Yu Gothic', Meiryo, system-ui, sans-serif;
+
+  --text-display: 700 1.875rem/1.15 var(--font-sans);
+  --text-h1:      700 1.5rem/1.2 var(--font-sans);
+  --text-h2:      700 1.25rem/1.25 var(--font-sans);
+  --text-h3:      700 1rem/1.3 var(--font-sans);
+  --text-body:    400 0.875rem/1.5 var(--font-sans);
+  --text-sm:      500 0.8125rem/1.4 var(--font-sans);
+  --text-label:   600 0.75rem/1.3 var(--font-sans);
+  --text-caption: 500 0.625rem/1.3 var(--font-sans);
+}
+
 @layer base {
-  html {
-    background-color: #FFFAF0;
+  body {
+    font-family: var(--font-sans);
+    color: var(--fg1);
+    background: var(--bg-warm-grad);
+    background-attachment: fixed;
+    min-height: 100svh;
+    -webkit-font-smoothing: antialiased;
   }
 
-  body {
-    background: linear-gradient(160deg, #FFFAF0 0%, #F0FFF4 50%, #FFF8E7 100%);
-    min-height: 100svh;
-    color: #2D3748;
+  h1 { font: var(--text-h1); color: var(--fg1); letter-spacing: -0.01em; }
+  h2 { font: var(--text-h2); color: var(--fg1); letter-spacing: -0.01em; }
+  h3 { font: var(--text-h3); color: var(--fg1); }
+  p  { font: var(--text-body); color: var(--fg2); }
+}
+
+@layer components {
+  .eyebrow {
+    font: var(--text-label);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--fg4);
+  }
+
+  .card {
+    background: var(--surface-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-card);
+    border-radius: var(--r-xl);
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn-primary {
+    background: var(--primary-grad);
+    color: var(--fg-on-primary);
+    font: var(--text-h3);
+    border: none;
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-btn);
+    padding: 0.875rem 1.25rem;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  .btn-primary:active { transform: scale(0.96); }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    font: var(--text-caption);
+    color: var(--primary-dark);
+    background: rgba(46, 197, 138, 0.10);
+    border-radius: var(--r-pill);
+    padding: 0.25rem 0.625rem;
   }
 }
 

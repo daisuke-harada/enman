@@ -6,33 +6,6 @@ Go（Echo v4 + GORM + MySQL）と Next.js 15（App Router + TanStack Query + Axi
 フルスタック Web / iOS テンプレート。OpenAPI スキーマを唯一の真実として、
 バックエンドのサーバーコードとフロントエンドの TypeScript 型を同時に自動生成する。
 
-```
-fullstack-template/
-├── api/                        # OpenAPI スキーマ（唯一の真実）
-│   ├── OpenAPI.yaml            # ← ここを編集して API を設計
-│   └── resolved/openapi/openapi.yaml  # make gen で自動生成（編集禁止）
-├── backend/                    # Go バックエンド
-│   ├── cmd/api/main.go         # エントリーポイント
-│   ├── internal/               # DDD レイヤー
-│   │   ├── domain/             # モデル・リポジトリ・サービス定義
-│   │   ├── usecase/            # ビジネスロジック
-│   │   ├── infrastructure/     # DB 実装
-│   │   └── interface/          # Echo ハンドラー・ミドルウェア
-│   │       └── openapi/        # make gen で自動生成（編集禁止）
-│   ├── pkg/                    # 共通ユーティリティ
-│   ├── go.mod
-│   └── makefile                # Backend 専用タスク
-├── frontend/                   # Next.js フロントエンド（→ frontend/CLAUDE.md）
-│   └── src/api-client/         # make gen で自動生成（編集禁止）
-├── .github/workflows/
-│   ├── ci.yaml                 # Backend ビルド・テスト + Frontend ビルド
-│   └── cd.yaml                 # デプロイ（構成決定後に追記）
-├── compose.yaml                # 開発用 Docker（DB + Swagger UI）
-├── .envrc                      # 環境変数（direnv, gitignore 済み）
-└── makefile                    # ルートオーケストレーター
-```
-
----
 
 ## 開発プロセス（OpenAPI ファースト・厳守）
 

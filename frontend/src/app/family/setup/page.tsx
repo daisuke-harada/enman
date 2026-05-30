@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { Users } from 'lucide-react';
 import { AuthGuard } from '@/components/AuthGuard';
 import { useCreateFamily, useJoinFamily } from '@/hooks/useFamily';
 
@@ -42,11 +43,10 @@ export default function FamilySetupPage() {
     <AuthGuard>
       <div
         className="min-h-screen flex flex-col items-center justify-center p-6"
-        style={{ background: 'linear-gradient(160deg, #FFFAF0 0%, #F0FFF4 50%, #FFF8E7 100%)' }}
       >
         {/* 背景の装飾円 */}
-        <div className="fixed top-[-80px] right-[-80px] w-72 h-72 rounded-full bg-[#76C893]/10 blur-3xl pointer-events-none" />
-        <div className="fixed bottom-[-60px] left-[-60px] w-56 h-56 rounded-full bg-[#FF9E00]/10 blur-3xl pointer-events-none" />
+        <div className="fixed top-[-80px] right-[-80px] w-72 h-72 rounded-full bg-[#2EC58A]/10 blur-3xl pointer-events-none" />
+        <div className="fixed bottom-[-60px] left-[-60px] w-56 h-56 rounded-full bg-[#FF6F9C]/10 blur-3xl pointer-events-none" />
 
         <motion.div
           initial={{ opacity: 0, y: 24 }}
@@ -60,9 +60,9 @@ export default function FamilySetupPage() {
               initial={{ scale: 0.8 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-              className="inline-flex items-center justify-center w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#76C893] to-[#52B788] shadow-xl shadow-green-200/50 mb-4"
+              className="inline-flex items-center justify-center w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#2EC58A] to-[#15A06E] shadow-xl shadow-green-200/50 mb-4"
             >
-              <span className="text-4xl">👨‍👩‍👧‍👦</span>
+              <Users size={40} className="text-white" strokeWidth={1.75} />
             </motion.div>
             <h1 className="text-2xl font-bold text-gray-800 tracking-tight">家族グループの設定</h1>
             <p className="text-sm text-gray-400 mt-1">グループを作成するか、招待コードで参加しましょう</p>
@@ -78,7 +78,7 @@ export default function FamilySetupPage() {
                   onClick={() => { setTab(t); setError(''); }}
                   className={`flex-1 py-2.5 rounded-[20px] text-sm font-semibold transition-all ${
                     tab === t
-                      ? 'bg-gradient-to-r from-[#76C893] to-[#52B788] text-white shadow-md shadow-green-200/40'
+                      ? 'bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white shadow-md shadow-green-200/40'
                       : 'text-gray-400 hover:text-gray-600'
                   }`}
                 >
@@ -99,7 +99,7 @@ export default function FamilySetupPage() {
                       onChange={(e) => setFamilyName(e.target.value)}
                       placeholder="田中家"
                       required
-                      className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+                      className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all"
                     />
                   </div>
                   {error && (
@@ -115,7 +115,7 @@ export default function FamilySetupPage() {
                     type="submit"
                     disabled={createFamily.isPending}
                     whileTap={{ scale: 0.97 }}
-                    className="w-full bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
+                    className="w-full bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
                   >
                     {createFamily.isPending ? '作成中...' : 'グループを作成する'}
                   </motion.button>
@@ -132,7 +132,7 @@ export default function FamilySetupPage() {
                       placeholder="ABC123DEF456"
                       maxLength={12}
                       required
-                      className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all uppercase"
+                      className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm font-mono tracking-widest text-center focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all uppercase"
                     />
                   </div>
                   {error && (
@@ -148,7 +148,7 @@ export default function FamilySetupPage() {
                     type="submit"
                     disabled={joinFamily.isPending}
                     whileTap={{ scale: 0.97 }}
-                    className="w-full bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
+                    className="w-full bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
                   >
                     {joinFamily.isPending ? '参加中...' : 'グループに参加する'}
                   </motion.button>

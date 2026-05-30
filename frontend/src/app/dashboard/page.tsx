@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { BarChart2, Target, MessageCircle } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { useContributions, useFamilyGoals, useCreateFamilyGoal, useFamilyTimeline } from '@/hooks/useDashboard';
 import type { ContributionItem, AppreciationResponse, FamilyGoalResponse } from '@/api-client/types.gen';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const USER_COLORS = ['#76C893', '#FF9E00', '#52B788', '#FFB74D', '#A8DDB5', '#FFC1CC', '#06b6d4', '#84cc16'];
+const USER_COLORS = ['#2EC58A', '#FF6F9C', '#15A06E', '#E84E80', '#A8DDB5', '#FFC1CC', '#06b6d4', '#84cc16'];
 
 
 function aggregateByUser(items: ContributionItem[]) {
@@ -29,7 +30,7 @@ function ContributionChart({ items }: { items: ContributionItem[] }) {
   if (data.length === 0) {
     return (
       <div className="text-center py-10">
-        <p className="text-3xl mb-2">📊</p>
+        <BarChart2 size={36} className="mx-auto mb-2 text-gray-200" />
         <p className="text-sm text-gray-400">まだデータがありません</p>
       </div>
     );
@@ -71,8 +72,8 @@ function GoalProgressBar({ goal }: { goal: FamilyGoalResponse }) {
     <div className="space-y-2">
       <div className="flex justify-between items-center">
         <span className="text-sm font-semibold text-gray-700">{goal.title}</span>
-        <span className={`text-xs font-bold ${achieved ? 'text-[#76C893]' : 'text-[#FF9E00]'}`}>
-          {achieved ? '🎉 達成！' : `${current} / ${target} pt`}
+        <span className={`text-xs font-bold ${achieved ? 'text-[#2EC58A]' : 'text-[#FF6F9C]'}`}>
+          {achieved ? '達成！' : `${current} / ${target} pt`}
         </span>
       </div>
       <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
@@ -81,8 +82,8 @@ function GoalProgressBar({ goal }: { goal: FamilyGoalResponse }) {
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.8, ease: 'easeOut' }}
           className={`h-full rounded-full ${achieved
-            ? 'bg-gradient-to-r from-[#76C893] to-[#52B788]'
-            : 'bg-gradient-to-r from-[#FF9E00] to-[#FFB74D]'}`}
+            ? 'bg-gradient-to-r from-[#2EC58A] to-[#15A06E]'
+            : 'bg-gradient-to-r from-[#FF6F9C] to-[#E84E80]'}`}
         />
       </div>
       <p className="text-[10px] text-gray-400 text-right">{pct}%</p>
@@ -103,12 +104,12 @@ function TimelineCard({ item, index }: { item: AppreciationResponse; index: numb
       transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
       className="flex items-start gap-3 py-3 border-b border-gray-100/80 last:border-0"
     >
-      <span className="text-xl shrink-0">💬</span>
+      <MessageCircle size={18} className="shrink-0 text-[#AEB8C4]" />
       <div className="flex-1 min-w-0">
         <p className="text-xs text-gray-700">
-          <span className="font-semibold text-[#52B788]">{item.from_user_name}</span>
+          <span className="font-semibold text-[#15A06E]">{item.from_user_name}</span>
           <span className="text-gray-400"> → </span>
-          <span className="font-semibold text-[#FF9E00]">{item.to_user_name}</span>
+          <span className="font-semibold text-[#FF6F9C]">{item.to_user_name}</span>
           {item.task_title && <span className="text-gray-400 ml-1">「{item.task_title}」</span>}
         </p>
         {item.message && <p className="text-xs text-gray-500 mt-0.5">{item.message}</p>}
@@ -148,7 +149,7 @@ function AddGoalForm({ onClose }: { onClose: () => void }) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="例：週末の焼肉"
-        className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+        className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all"
       />
       <input
         type="number"
@@ -156,7 +157,7 @@ function AddGoalForm({ onClose }: { onClose: () => void }) {
         onChange={(e) => setPoints(e.target.value)}
         placeholder="目標ポイント（例：100）"
         min={1}
-        className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+        className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all"
       />
       {error && <p className="text-xs text-red-500">{error}</p>}
       <div className="flex gap-2">
@@ -164,7 +165,7 @@ function AddGoalForm({ onClose }: { onClose: () => void }) {
           type="submit"
           disabled={createGoal.isPending}
           whileTap={{ scale: 0.96 }}
-          className="flex-1 bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
+          className="flex-1 bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
         >
           {createGoal.isPending ? '追加中...' : '追加する'}
         </motion.button>
@@ -194,8 +195,8 @@ export default function DashboardPage() {
       >
         <div className="md:hidden">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-md">
-              <span className="text-base">📊</span>
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#2EC58A] to-[#15A06E] flex items-center justify-center shadow-md">
+              <BarChart2 size={16} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-xl font-bold text-gray-800">ダッシュボード</h1>
           </div>
@@ -235,7 +236,7 @@ export default function DashboardPage() {
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">ご褒美目標</p>
             <button
               onClick={() => setShowAddGoal(!showAddGoal)}
-              className="text-xs text-[#76C893] font-semibold hover:text-[#52B788] transition-colors"
+              className="text-xs text-[#2EC58A] font-semibold hover:text-[#15A06E] transition-colors"
             >
               {showAddGoal ? '閉じる' : '＋ 追加'}
             </button>
@@ -249,7 +250,7 @@ export default function DashboardPage() {
             <div className="text-center py-4 text-gray-400 text-sm">読み込み中...</div>
           ) : goals.length === 0 && !showAddGoal ? (
             <div className="text-center py-8">
-              <p className="text-3xl mb-2">🎯</p>
+              <Target size={36} className="mx-auto mb-2 text-gray-200" />
               <p className="text-sm text-gray-400">目標を設定しましょう！</p>
             </div>
           ) : (
@@ -273,7 +274,7 @@ export default function DashboardPage() {
             <div className="text-center py-8 text-gray-400 text-sm">読み込み中...</div>
           ) : timeline.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-3xl mb-2">💬</p>
+              <MessageCircle size={36} className="mx-auto mb-2 text-gray-200" />
               <p className="text-sm text-gray-400">まだ感謝のやりとりがありません</p>
             </div>
           ) : (

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { Bell, MessageCircle } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { useNotifications } from '@/hooks/useAppreciations';
 import type { AppreciationResponse } from '@/api-client/types.gen';
@@ -16,15 +17,15 @@ function NotificationCard({ item, index }: { item: AppreciationResponse; index: 
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: index * 0.05, ease: 'easeOut' }}
-      className="bg-gradient-to-r from-[#76C893]/20 to-[#52B788]/10 backdrop-blur-md rounded-[24px] px-5 py-4 border border-[#76C893]/30 shadow-sm"
+      className="bg-gradient-to-r from-[#2EC58A]/20 to-[#15A06E]/10 backdrop-blur-md rounded-[24px] px-5 py-4 border border-[#2EC58A]/30 shadow-sm"
     >
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-2xl bg-white/60 backdrop-blur-sm flex items-center justify-center shrink-0 shadow-sm">
-          <span className="text-2xl">💬</span>
+          <MessageCircle size={22} className="text-[#2EC58A]" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-gray-800">
-            <span className="text-[#52B788]">{item.from_user_name}</span>
+            <span className="text-[#15A06E]">{item.from_user_name}</span>
             <span className="text-gray-500 font-normal"> さんからコメントが届きました</span>
           </p>
           <p className="text-xs text-gray-500 mt-1 truncate">「{item.task_title}」</p>
@@ -51,8 +52,8 @@ export default function NotificationsPage() {
       >
         <div className="md:hidden">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-md">
-              <span className="text-base">🔔</span>
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#2EC58A] to-[#15A06E] flex items-center justify-center shadow-md">
+              <Bell size={16} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-xl font-bold text-gray-800">通知</h1>
           </div>
@@ -75,7 +76,7 @@ export default function NotificationsPage() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center py-20"
           >
-            <p className="text-5xl mb-4">🔔</p>
+            <Bell size={44} className="mx-auto mb-4 text-gray-200" strokeWidth={1.5} />
             <p className="text-sm font-medium text-gray-500">まだ通知はありません</p>
             <p className="text-xs text-gray-400 mt-1">タスクを完了すると感謝が届きます</p>
           </motion.div>
