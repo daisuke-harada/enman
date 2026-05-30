@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Calendar, RefreshCw, Pin, Trash2, Inbox } from 'lucide-react';
+import { EnmanMark } from '@/components/EnmanMark';
 import { AppShell } from '@/components/AppShell';
 import { useCreateTask, useUpdateTask, useDeleteTask, useCompleteTask } from '@/hooks/useTasks';
 import { useCurrentUser } from '@/hooks/useCurrentUser';
@@ -28,7 +30,7 @@ type RecurrenceFieldsProps = {
 
 async function launchConfetti() {
   const confetti = (await import('canvas-confetti')).default;
-  confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#76C893', '#FF9E00', '#FFB74D', '#A8DDB5', '#FFC1CC', '#FFD700'], shapes: ['circle', 'square'], scalar: 0.9 });
+  confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 }, colors: ['#2EC58A', '#FF6F9C', '#E84E80', '#15A06E', '#FFA6C6'], shapes: ['circle', 'square'], scalar: 0.9 });
 }
 
 function isSameDay(a: Date, b: Date) {
@@ -75,7 +77,7 @@ function RecurrenceFields({
         <div className="flex gap-1.5">
           {(['none', 'daily', 'weekly', 'monthly'] as RecurrenceType[]).map((t) => (
             <button key={t} type="button" onClick={() => setRecurrence(t)}
-              className={`flex-1 py-2 rounded-2xl text-xs font-semibold transition-all ${recurrence === t ? 'bg-gradient-to-r from-[#76C893] to-[#52B788] text-white shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
+              className={`flex-1 py-2 rounded-2xl text-xs font-semibold transition-all ${recurrence === t ? 'bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
               {t === 'none' ? 'なし' : t === 'daily' ? '毎日' : t === 'weekly' ? '毎週' : '毎月'}
             </button>
           ))}
@@ -87,7 +89,7 @@ function RecurrenceFields({
           <div className="flex gap-1">
             {WEEKDAY_LABELS_SHORT.map((label, idx) => (
               <button key={idx} type="button" onClick={() => setWeekday(idx)}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${weekday === idx ? 'bg-[#76C893] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${weekday === idx ? 'bg-[#2EC58A] text-white' : 'bg-gray-100 text-gray-500'}`}>
                 {label}
               </button>
             ))}
@@ -99,7 +101,7 @@ function RecurrenceFields({
           <div className="flex gap-2">
             {(['date', 'weekday'] as MonthlyMode[]).map((m) => (
               <button key={m} type="button" onClick={() => setMonthlyMode(m)}
-                className={`flex-1 py-2.5 rounded-2xl text-xs font-semibold transition-all ${monthlyMode === m ? 'bg-gradient-to-r from-[#76C893] to-[#52B788] text-white shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
+                className={`flex-1 py-2.5 rounded-2xl text-xs font-semibold transition-all ${monthlyMode === m ? 'bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white shadow-sm' : 'bg-gray-100 text-gray-500'}`}>
                 {m === 'date' ? '毎月○日' : '毎月 第△曜日'}
               </button>
             ))}
@@ -108,7 +110,7 @@ function RecurrenceFields({
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400">毎月</span>
               <input type="number" min={1} max={31} value={dayOfMonth} onChange={(e) => setDayOfMonth(Number(e.target.value))}
-                className="w-16 bg-[#FFFAF0] border border-gray-200/80 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#76C893]/40" />
+                className="w-16 bg-[#FFFCF6] border border-gray-200/80 rounded-xl px-2 py-2 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40" />
               <span className="text-xs text-gray-400">日</span>
             </div>
           ) : (
@@ -118,7 +120,7 @@ function RecurrenceFields({
                 <div className="flex gap-1.5">
                   {NTH_LABELS.map((label, idx) => (
                     <button key={idx} type="button" onClick={() => setWeekOfMonth(idx + 1)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${weekOfMonth === idx + 1 ? 'bg-[#76C893] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${weekOfMonth === idx + 1 ? 'bg-[#2EC58A] text-white' : 'bg-gray-100 text-gray-500'}`}>
                       {label}
                     </button>
                   ))}
@@ -129,7 +131,7 @@ function RecurrenceFields({
                 <div className="flex gap-1">
                   {WEEKDAY_LABELS_SHORT.map((label, idx) => (
                     <button key={idx} type="button" onClick={() => setMonthlyWeekday(idx)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${monthlyWeekday === idx ? 'bg-[#76C893] text-white' : 'bg-gray-100 text-gray-500'}`}>
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${monthlyWeekday === idx ? 'bg-[#2EC58A] text-white' : 'bg-gray-100 text-gray-500'}`}>
                       {label}
                     </button>
                   ))}
@@ -143,7 +145,7 @@ function RecurrenceFields({
         <div>
           <p className="text-xs font-medium text-gray-400 mb-1.5">開始日</p>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-            className="bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40" />
+            className="bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40" />
         </div>
       )}
     </div>
@@ -162,7 +164,7 @@ function DesktopRecurrenceFields({
         <label className="text-sm font-medium text-gray-500 w-16 shrink-0">繰り返し</label>
         <div className="relative flex-1">
           <select value={recurrence} onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}
-            className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] cursor-pointer pr-8 transition-all">
+            className="w-full appearance-none bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] cursor-pointer pr-8 transition-all">
             <option value="none">なし（1回限り）</option>
             <option value="daily">毎日</option>
             <option value="weekly">毎週</option>
@@ -178,7 +180,7 @@ function DesktopRecurrenceFields({
           <div className="flex gap-1.5 flex-1">
             {WEEKDAY_LABELS_SHORT.map((label, idx) => (
               <button key={idx} type="button" onClick={() => setWeekday(idx)}
-                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${weekday === idx ? 'bg-[#76C893] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#F0FBF4] hover:text-[#52B788]'}`}>
+                className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${weekday === idx ? 'bg-[#2EC58A] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#EFFCF6] hover:text-[#15A06E]'}`}>
                 {label}
               </button>
             ))}
@@ -191,7 +193,7 @@ function DesktopRecurrenceFields({
           <div className="flex gap-2">
             {(['date', 'weekday'] as MonthlyMode[]).map((m) => (
               <button key={m} type="button" onClick={() => setMonthlyMode(m)}
-                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${monthlyMode === m ? 'bg-gradient-to-r from-[#76C893] to-[#52B788] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#F0FBF4]'}`}>
+                className={`flex-1 py-2 rounded-xl text-sm font-semibold transition-all ${monthlyMode === m ? 'bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#EFFCF6]'}`}>
                 {m === 'date' ? '毎月○日' : '第△曜日'}
               </button>
             ))}
@@ -200,7 +202,7 @@ function DesktopRecurrenceFields({
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-500">毎月</span>
               <input type="number" min={1} max={31} value={dayOfMonth} onChange={(e) => setDayOfMonth(Number(e.target.value))}
-                className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#76C893]/40" />
+                className="w-16 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40" />
               <span className="text-sm text-gray-500">日</span>
             </div>
           ) : (
@@ -210,7 +212,7 @@ function DesktopRecurrenceFields({
                 <div className="flex gap-2">
                   {NTH_LABELS.map((label, idx) => (
                     <button key={idx} type="button" onClick={() => setWeekOfMonth(idx + 1)}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${weekOfMonth === idx + 1 ? 'bg-[#76C893] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#F0FBF4] hover:text-[#52B788]'}`}>
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${weekOfMonth === idx + 1 ? 'bg-[#2EC58A] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#EFFCF6] hover:text-[#15A06E]'}`}>
                       {label}
                     </button>
                   ))}
@@ -221,7 +223,7 @@ function DesktopRecurrenceFields({
                 <div className="flex gap-2">
                   {WEEKDAY_LABELS_SHORT.map((label, idx) => (
                     <button key={idx} type="button" onClick={() => setMonthlyWeekday(idx)}
-                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${monthlyWeekday === idx ? 'bg-[#76C893] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#F0FBF4] hover:text-[#52B788]'}`}>
+                      className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${monthlyWeekday === idx ? 'bg-[#2EC58A] text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-[#EFFCF6] hover:text-[#15A06E]'}`}>
                       {label}
                     </button>
                   ))}
@@ -236,7 +238,7 @@ function DesktopRecurrenceFields({
         <div className="flex items-center gap-3">
           <label className="text-sm font-medium text-gray-500 w-16 shrink-0">開始日</label>
           <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893]" />
+            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A]" />
         </div>
       )}
     </div>
@@ -284,7 +286,7 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" value={title} onChange={(e) => { setTitle(e.target.value); setError(''); }}
           placeholder="例：皿洗い" autoFocus
-          className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all" />
+          className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all" />
         <RecurrenceFields
           recurrence={recurrence} setRecurrence={setRecurrence}
           weekday={weekday} setWeekday={setWeekday}
@@ -303,7 +305,7 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={onClose} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">キャンセル</button>
           <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.96 }}
-            className="flex-1 bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
+            className="flex-1 bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
             {isPending ? '作成中...' : recurrence === 'none' ? '追加する' : '繰り返し作成'}
           </motion.button>
         </div>
@@ -363,7 +365,7 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
 
           <motion.button onClick={handleDeleteSingle} disabled={isPending} whileTap={{ scale: 0.97 }}
             className="w-full flex items-start gap-3 px-4 py-4 rounded-2xl border-2 border-orange-200/80 bg-orange-50/60 hover:bg-orange-100/60 transition-colors text-left disabled:opacity-60">
-            <span className="text-xl shrink-0 mt-0.5">📌</span>
+            <Pin size={20} className="shrink-0 mt-0.5 text-orange-600" />
             <div>
               <p className="text-sm font-bold text-orange-700">このタスクのみ削除</p>
               <p className="text-xs text-orange-500/80 mt-0.5 leading-relaxed">この1件だけを削除します。<br />繰り返し設定は維持されます。</p>
@@ -372,7 +374,7 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
 
           <motion.button onClick={handleDeleteAll} disabled={isPending} whileTap={{ scale: 0.97 }}
             className="w-full flex items-start gap-3 px-4 py-4 rounded-2xl border-2 border-red-200/80 bg-red-50/60 hover:bg-red-100/60 transition-colors text-left disabled:opacity-60">
-            <span className="text-xl shrink-0 mt-0.5">🗑️</span>
+            <Trash2 size={20} className="shrink-0 mt-0.5 text-red-500" />
             <div>
               <p className="text-sm font-bold text-red-600">繰り返しをすべて削除</p>
               <p className="text-xs text-red-400/80 mt-0.5 leading-relaxed">この繰り返し設定と、紐づく<br />すべてのタスクを削除します。</p>
@@ -414,14 +416,14 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
     <BottomSheet onClose={onClose} title="タスクを編集">
       <form onSubmit={handleSave} className="space-y-4">
         <input type="text" value={editTitle} onChange={(e) => { setEditTitle(e.target.value); setError(''); }} autoFocus
-          className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 transition-all" />
+          className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 transition-all" />
         {error && <p className="text-xs text-red-500 bg-red-50 rounded-2xl px-4 py-2.5">{error}</p>}
         <div className="flex gap-2 pt-1">
           <button type="button" onClick={() => setDeleteMode(ruleId ? 'choose' : 'simple')}
             className="py-3.5 px-4 rounded-2xl text-sm font-semibold text-red-400 hover:bg-red-50 transition-colors">削除</button>
           <button type="button" onClick={onClose} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">キャンセル</button>
           <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.96 }}
-            className="flex-1 bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
+            className="flex-1 bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
             {isPending ? '保存中...' : '保存する'}
           </motion.button>
         </div>
@@ -452,9 +454,9 @@ function MonthCalendarSheet({ year, month, dayTaskMap, selectedDate, onSelectDat
   return (
     <BottomSheet onClose={onClose} title={`${year}年 ${month}月`}>
       <div className="flex items-center justify-between mb-3 -mt-2">
-        <button onClick={onPrevMonth} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] text-lg">‹</button>
+        <button onClick={onPrevMonth} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#15A06E] text-lg">‹</button>
         <span className="text-sm font-bold text-gray-700">{year}年 {month}月</span>
-        <button onClick={onNextMonth} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] text-lg">›</button>
+        <button onClick={onNextMonth} className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#15A06E] text-lg">›</button>
       </div>
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((w, i) => (
@@ -472,13 +474,13 @@ function MonthCalendarSheet({ year, month, dayTaskMap, selectedDate, onSelectDat
           const hasPending = tasks.some(t => t.status === 'pending');
           return (
             <button key={dateStr} onClick={() => { onSelectDate(date); onClose(); }}
-              className={`flex flex-col items-center py-1 rounded-xl min-h-[40px] transition-all active:scale-95 ${isSelected ? 'bg-[#76C893]/15 ring-1 ring-[#76C893]' : isToday ? 'bg-[#E8F8EE]' : 'hover:bg-[#F0FBF4]'}`}>
-              <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full leading-none ${isToday ? 'bg-gradient-to-br from-[#76C893] to-[#52B788] text-white text-[10px]' : 'text-gray-700'}`}>
+              className={`flex flex-col items-center py-1 rounded-xl min-h-[40px] transition-all active:scale-95 ${isSelected ? 'bg-[#2EC58A]/15 ring-1 ring-[#2EC58A]' : isToday ? 'bg-[#E6FAEF]' : 'hover:bg-[#EFFCF6]'}`}>
+              <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full leading-none ${isToday ? 'bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white text-[10px]' : 'text-gray-700'}`}>
                 {date.getDate()}
               </span>
               <div className="flex gap-0.5 mt-0.5 h-1.5 items-center">
-                {hasDone && <span className="w-1 h-1 rounded-full bg-[#76C893]" />}
-                {hasPending && <span className="w-1 h-1 rounded-full bg-[#76C893]/30" />}
+                {hasDone && <span className="w-1 h-1 rounded-full bg-[#2EC58A]" />}
+                {hasPending && <span className="w-1 h-1 rounded-full bg-[#2EC58A]/30" />}
               </div>
             </button>
           );
@@ -509,15 +511,15 @@ function CommentForm({ taskId, currentUserId, doneBy, comments }: {
       {comments && comments.length > 0 && (
         <div className="space-y-1">
           {comments.map((c, i) => (
-            <p key={i} className="text-xs text-gray-500"><span className="font-semibold text-[#52B788]">{c.from_user_name}</span>{': '}{c.message}</p>
+            <p key={i} className="text-xs text-gray-500"><span className="font-semibold text-[#15A06E]">{c.from_user_name}</span>{': '}{c.message}</p>
           ))}
         </div>
       )}
       {!alreadySent && (
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="コメントを送る..." maxLength={255}
-            className="flex-1 bg-[#F7FDF9] border border-[#76C893]/30 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#76C893]/50" />
-          <motion.button type="submit" disabled={!text.trim() || sendAppreciation.isPending} whileTap={{ scale: 0.95 }} className="text-xs font-semibold text-[#52B788] disabled:opacity-40 px-2">
+            className="flex-1 bg-[#FAFFFD] border border-[#2EC58A]/30 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#2EC58A]/50" />
+          <motion.button type="submit" disabled={!text.trim() || sendAppreciation.isPending} whileTap={{ scale: 0.95 }} className="text-xs font-semibold text-[#15A06E] disabled:opacity-40 px-2">
             {sent ? '✓' : '送信'}
           </motion.button>
         </form>
@@ -534,20 +536,20 @@ function ProgressRing({ done, total }: { done: number; total: number }) {
   return (
     <div className="relative flex items-center justify-center w-[76px] h-[76px]">
       <svg width="76" height="76" viewBox="0 0 76 76" className="-rotate-90">
-        <circle cx="38" cy="38" r={r} fill="none" stroke="#F0FBF4" strokeWidth="6" />
+        <circle cx="38" cy="38" r={r} fill="none" stroke="#EFFCF6" strokeWidth="6" />
         <circle cx="38" cy="38" r={r} fill="none" stroke="url(#ring-grad)" strokeWidth="6"
           strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)}
           strokeLinecap="round" style={{ transition: 'stroke-dashoffset 0.7s ease' }}
         />
         <defs>
           <linearGradient id="ring-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#76C893" />
-            <stop offset="100%" stopColor="#52B788" />
+            <stop offset="0%" stopColor="#2EC58A" />
+            <stop offset="100%" stopColor="#15A06E" />
           </linearGradient>
         </defs>
       </svg>
       <div className="absolute flex flex-col items-center rotate-0 select-none">
-        <span className="text-base font-bold text-[#52B788] leading-none">{total > 0 ? Math.round(pct * 100) : 0}</span>
+        <span className="text-base font-bold text-[#15A06E] leading-none">{total > 0 ? Math.round(pct * 100) : 0}</span>
         <span className="text-[9px] text-gray-400 leading-none mt-0.5">%</span>
       </div>
     </div>
@@ -578,12 +580,12 @@ function DesktopMonthCalendar({ year, month, dayTaskMap, selectedDate, onSelectD
       {/* 月ナビ */}
       <div className="flex items-center justify-between mb-5 shrink-0">
         <button onClick={onPrevMonth}
-          className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#52B788] hover:bg-[#F0FBF4] transition-colors text-xl font-light">
+          className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#15A06E] hover:bg-[#EFFCF6] transition-colors text-xl font-light">
           ‹
         </button>
         <h2 className="text-xl font-bold text-gray-800">{year}年 {month}月</h2>
         <button onClick={onNextMonth}
-          className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#52B788] hover:bg-[#F0FBF4] transition-colors text-xl font-light">
+          className="w-10 h-10 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-400 hover:text-[#15A06E] hover:bg-[#EFFCF6] transition-colors text-xl font-light">
           ›
         </button>
       </div>
@@ -610,16 +612,16 @@ function DesktopMonthCalendar({ year, month, dayTaskMap, selectedDate, onSelectD
               whileTap={{ scale: 0.95 }}
               className={`flex flex-col p-1.5 rounded-2xl text-left transition-colors cursor-pointer overflow-hidden ${
                 isSelected
-                  ? 'bg-[#76C893]/12 ring-2 ring-[#76C893]/50 shadow-sm'
+                  ? 'bg-[#2EC58A]/12 ring-2 ring-[#2EC58A]/50 shadow-sm'
                   : isToday
-                  ? 'bg-[#E8F8EE]'
-                  : 'hover:bg-[#F7FDF9]'
+                  ? 'bg-[#E6FAEF]'
+                  : 'hover:bg-[#FAFFFD]'
               }`}>
               <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full shrink-0 ${
                 isToday
-                  ? 'bg-gradient-to-br from-[#76C893] to-[#52B788] text-white shadow-sm text-[11px]'
+                  ? 'bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white shadow-sm text-[11px]'
                   : isSelected
-                  ? 'text-[#52B788]'
+                  ? 'text-[#15A06E]'
                   : date.getDay() === 0
                   ? 'text-red-400'
                   : date.getDay() === 6
@@ -631,7 +633,7 @@ function DesktopMonthCalendar({ year, month, dayTaskMap, selectedDate, onSelectD
               <div className="mt-1 space-y-0.5 w-full overflow-hidden min-h-0">
                 {preview.map((t, i) => (
                   <div key={i} className={`text-[9px] px-1 py-0.5 rounded-md truncate font-medium leading-tight ${
-                    t.status === 'done' ? 'bg-[#76C893]/15 text-[#52B788]' : 'bg-gray-100/80 text-gray-500'
+                    t.status === 'done' ? 'bg-[#2EC58A]/15 text-[#15A06E]' : 'bg-gray-100/80 text-gray-500'
                   }`}>
                     {t.title}
                   </div>
@@ -690,7 +692,7 @@ function DesktopInlineTaskForm({ selectedDate }: { selectedDate: Date }) {
   return (
     <div className="bg-white rounded-[28px] p-5 shadow-[0_2px_20px_rgba(0,0,0,0.05)] border border-gray-100/60 shrink-0">
       <div className="flex items-center gap-2 mb-4">
-        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-sm">
+        <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-[#2EC58A] to-[#15A06E] flex items-center justify-center shadow-sm">
           <span className="text-white text-xs font-bold leading-none">+</span>
         </div>
         <h3 className="text-sm font-bold text-gray-700">タスクを追加</h3>
@@ -698,7 +700,7 @@ function DesktopInlineTaskForm({ selectedDate }: { selectedDate: Date }) {
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" value={title} onChange={(e) => { setTitle(e.target.value); setError(''); setSuccess(false); }}
           placeholder="例：皿洗い、買い物..."
-          className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all placeholder:text-gray-300" />
+          className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all placeholder:text-gray-300" />
 
         <DesktopRecurrenceFields
           recurrence={recurrence} setRecurrence={setRecurrence}
@@ -717,18 +719,18 @@ function DesktopInlineTaskForm({ selectedDate }: { selectedDate: Date }) {
           )}
           {success && (
             <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              className="text-xs text-[#52B788] bg-[#76C893]/10 rounded-xl px-3 py-2">✓ タスクを追加しました</motion.p>
+              className="text-xs text-[#15A06E] bg-[#2EC58A]/10 rounded-xl px-3 py-2">✓ タスクを追加しました</motion.p>
           )}
         </AnimatePresence>
 
         <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.97 }}
-          className="w-full bg-gradient-to-r from-[#76C893] to-[#52B788] text-white font-bold py-3 rounded-xl text-sm shadow-md shadow-green-200/40 disabled:opacity-60 hover:shadow-lg hover:shadow-green-200/50 transition-all flex items-center justify-center gap-2">
+          className="w-full bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white font-bold py-3 rounded-xl text-sm shadow-md shadow-green-200/40 disabled:opacity-60 hover:shadow-lg hover:shadow-green-200/50 transition-all flex items-center justify-center gap-2">
           {isPending ? (
             <span className="flex items-center gap-2"><span className="animate-spin text-base">◌</span>追加中...</span>
           ) : recurrence === 'none' ? (
             <><span className="text-lg leading-none font-light">+</span>タスクを追加</>
           ) : (
-            <><span className="text-base">🔁</span>繰り返しを作成</>
+            <><RefreshCw size={15} />繰り返しを作成</>
           )}
         </motion.button>
       </form>
@@ -817,8 +819,8 @@ export default function HomePage() {
         <header className="px-4 pb-3 bg-transparent" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-sm">
-                <span className="text-sm">🍏</span>
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-br from-[#2EC58A] to-[#15A06E] flex items-center justify-center shadow-sm">
+                <EnmanMark size={20} />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-gray-800 leading-tight">enman</h1>
@@ -832,15 +834,17 @@ export default function HomePage() {
           {/* 週バー（コンパクト） */}
           <div className="bg-white/90 rounded-[20px] px-2.5 py-2 shadow-sm border border-white/60">
             <div className="flex items-center justify-between mb-1.5 px-0.5">
-              <button onClick={() => goWeek(-1)} className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] transition-colors text-base">‹</button>
+              <button onClick={() => goWeek(-1)} className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#15A06E] transition-colors text-base">‹</button>
               <div className="flex items-center gap-1.5">
                 <span className="text-[11px] font-bold text-gray-500">{weekLabel}</span>
                 <button onClick={() => setSelectedDate(new Date())}
-                  className="text-[10px] font-semibold text-[#52B788] bg-[#76C893]/10 px-1.5 py-0.5 rounded-full hover:bg-[#76C893]/20 transition-colors">今日</button>
+                  className="text-[10px] font-semibold text-[#15A06E] bg-[#2EC58A]/10 px-1.5 py-0.5 rounded-full hover:bg-[#2EC58A]/20 transition-colors">今日</button>
                 <button onClick={() => setShowCalendar(true)}
-                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#52B788] transition-colors text-sm">📅</button>
+                  className="w-6 h-6 rounded-lg flex items-center justify-center text-gray-400 hover:text-[#15A06E] transition-colors">
+                  <Calendar size={14} />
+                </button>
               </div>
-              <button onClick={() => goWeek(1)} className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#52B788] transition-colors text-base">›</button>
+              <button onClick={() => goWeek(1)} className="w-7 h-7 rounded-xl flex items-center justify-center text-gray-400 hover:text-[#15A06E] transition-colors text-base">›</button>
             </div>
             <div ref={weekRef} className="grid grid-cols-7 gap-0.5">
               {weekDays.map((date) => {
@@ -852,16 +856,16 @@ export default function HomePage() {
                 const hasPending = tasks.some(t => t.status === 'pending');
                 return (
                   <motion.button key={dateStr} onClick={() => setSelectedDate(date)} whileTap={{ scale: 0.92 }}
-                    className={`flex flex-col items-center py-1.5 rounded-xl transition-all ${isSelected ? 'bg-gradient-to-b from-[#76C893]/20 to-[#52B788]/10 ring-1 ring-[#76C893]/60' : isToday ? 'bg-[#E8F8EE]' : 'hover:bg-[#F7FDF9]'}`}>
+                    className={`flex flex-col items-center py-1.5 rounded-xl transition-all ${isSelected ? 'bg-gradient-to-b from-[#2EC58A]/20 to-[#15A06E]/10 ring-1 ring-[#2EC58A]/60' : isToday ? 'bg-[#E6FAEF]' : 'hover:bg-[#FAFFFD]'}`}>
                     <span className={`text-[9px] font-semibold mb-0.5 ${date.getDay() === 0 ? 'text-red-400' : date.getDay() === 6 ? 'text-blue-400' : 'text-gray-400'}`}>
                       {WEEKDAYS[date.getDay()]}
                     </span>
-                    <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full leading-none ${isToday ? 'bg-gradient-to-br from-[#76C893] to-[#52B788] text-white shadow-sm' : isSelected ? 'text-[#52B788]' : 'text-gray-700'}`}>
+                    <span className={`text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full leading-none ${isToday ? 'bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white shadow-sm' : isSelected ? 'text-[#15A06E]' : 'text-gray-700'}`}>
                       {date.getDate()}
                     </span>
                     <div className="flex gap-0.5 mt-0.5 h-1 items-center">
-                      {hasDone && <span className="w-1 h-1 rounded-full bg-[#76C893]" />}
-                      {hasPending && <span className="w-1 h-1 rounded-full bg-[#76C893]/30" />}
+                      {hasDone && <span className="w-1 h-1 rounded-full bg-[#2EC58A]" />}
+                      {hasPending && <span className="w-1 h-1 rounded-full bg-[#2EC58A]/30" />}
                     </div>
                   </motion.button>
                 );
@@ -873,7 +877,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between px-0.5">
             <p className="text-sm font-bold text-gray-800">
               {selectedDate.getMonth() + 1}月{selectedDate.getDate()}日（{WEEKDAYS[selectedDate.getDay()]}）
-              {isSameDay(selectedDate, today) && <span className="ml-1.5 text-[10px] text-[#52B788] font-semibold bg-[#76C893]/10 px-1.5 py-0.5 rounded-full">今日</span>}
+              {isSameDay(selectedDate, today) && <span className="ml-1.5 text-[10px] text-[#15A06E] font-semibold bg-[#2EC58A]/10 px-1.5 py-0.5 rounded-full">今日</span>}
             </p>
             <span className="text-xs text-gray-400">{dayTasks.length > 0 ? `${doneTasks}/${dayTasks.length} 完了` : ''}</span>
           </div>
@@ -883,7 +887,7 @@ export default function HomePage() {
             <div className="text-center py-10 text-gray-400 text-sm">読み込み中...</div>
           ) : dayTasks.length === 0 ? (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="text-center py-10">
-              <p className="text-4xl mb-2">📭</p>
+              <Inbox size={40} className="mx-auto mb-2 text-gray-200" />
               <p className="text-sm text-gray-400">この日のタスクはありません</p>
             </motion.div>
           ) : (
@@ -897,26 +901,26 @@ export default function HomePage() {
                     <motion.div key={`${task.recurrence_rule_id ?? 'task'}-${i}`}
                       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 20 }}
                       transition={{ delay: i * 0.03 }}
-                      className={`bg-white/85 backdrop-blur-md rounded-[22px] px-4 py-3.5 shadow-card border flex items-center gap-3 ${isDone ? 'border-[#76C893]/20' : 'border-white/60'}`}>
+                      className={`bg-white/85 backdrop-blur-md rounded-[22px] px-4 py-3.5 shadow-card border flex items-center gap-3 ${isDone ? 'border-[#2EC58A]/20' : 'border-white/60'}`}>
                       <motion.button onClick={() => !isDone && handleComplete(task)} whileTap={!isDone ? { scale: 0.85 } : {}}
                         className={`shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
-                          isDone ? 'border-[#76C893] bg-gradient-to-br from-[#76C893] to-[#52B788] shadow-md shadow-green-200/40'
-                            : isVirtual ? 'border-gray-200 hover:border-[#76C893]/60 hover:bg-[#76C893]/5'
-                            : 'border-[#76C893]/50 hover:border-[#76C893] hover:bg-[#76C893]/10'
+                          isDone ? 'border-[#2EC58A] bg-gradient-to-br from-[#2EC58A] to-[#15A06E] shadow-md shadow-green-200/40'
+                            : isVirtual ? 'border-gray-200 hover:border-[#2EC58A]/60 hover:bg-[#2EC58A]/5'
+                            : 'border-[#2EC58A]/50 hover:border-[#2EC58A] hover:bg-[#2EC58A]/10'
                         }`}>
                         {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-sm font-bold">✓</motion.span>}
                       </motion.button>
                       <button onClick={() => canEdit && setEditingTask(task)} className={`flex-1 min-w-0 text-left ${canEdit ? '' : 'cursor-default'}`}>
                         <div className="flex items-center gap-1.5 min-w-0">
                           <p className={`text-sm font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</p>
-                          {task.recurrence_rule_id && <span className="shrink-0 text-gray-300 text-xs">🔁</span>}
+                          {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-gray-300" />}
                           {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-gray-300 border border-gray-200 px-1.5 py-0.5 rounded-full font-medium">予定</span>}
                         </div>
-                        {task.category && <span className="text-[10px] text-[#76C893] font-medium">{task.category}</span>}
+                        {task.category && <span className="text-[10px] text-[#2EC58A] font-medium">{task.category}</span>}
                       </button>
                       <div className="shrink-0 text-right">
                         {isDone
-                          ? <span className="text-[10px] font-bold text-[#52B788] bg-[#76C893]/10 px-2 py-1 rounded-full">DONE</span>
+                          ? <span className="text-[10px] font-bold text-[#15A06E] bg-[#2EC58A]/10 px-2 py-1 rounded-full">DONE</span>
                           : task.user_name && <span className="text-[10px] text-gray-400">{task.user_name}</span>
                         }
                       </div>
@@ -929,7 +933,7 @@ export default function HomePage() {
 
           {/* タスク追加ボタン */}
           <motion.button onClick={() => setShowCreate(true)} whileTap={{ scale: 0.97 }}
-            className="w-full bg-gradient-to-r from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-[22px] flex items-center justify-center gap-2 shadow-lg shadow-green-200/50 mt-1">
+            className="w-full bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-[22px] flex items-center justify-center gap-2 shadow-lg shadow-green-200/50 mt-1">
             <span className="text-xl leading-none font-light">+</span>
             <span className="text-sm">タスクを追加</span>
           </motion.button>
@@ -939,7 +943,7 @@ export default function HomePage() {
       {/* ════════════════════════════════════
           デスクトップレイアウト (≥ lg)
           ════════════════════════════════════ */}
-      <div className="hidden lg:flex lg:flex-col h-screen overflow-hidden bg-[#F8FBF9]">
+      <div className="hidden lg:flex lg:flex-col h-screen overflow-hidden">
         {/* デスクトップヘッダー: 選択日付 + 今日ボタン */}
         <header className="shrink-0 px-6 py-3 flex items-center justify-between bg-white/90 backdrop-blur border-b border-gray-100/80">
           <div className="flex items-center gap-3">
@@ -948,7 +952,7 @@ export default function HomePage() {
               <span className="text-base font-normal text-gray-400 ml-1.5">（{WEEKDAYS[selectedDate.getDay()]}）</span>
             </h2>
             {isSameDay(selectedDate, today) && (
-              <span className="text-xs text-[#52B788] font-semibold bg-[#76C893]/10 px-2.5 py-0.5 rounded-full">今日</span>
+              <span className="text-xs text-[#15A06E] font-semibold bg-[#2EC58A]/10 px-2.5 py-0.5 rounded-full">今日</span>
             )}
             {dayTasks.length > 0 && (
               <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-0.5 rounded-full">{doneTasks}/{dayTasks.length} 完了</span>
@@ -957,7 +961,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             {user && <span className="text-xs text-gray-400">{user.name}（{user.role}）</span>}
             <button onClick={() => setSelectedDate(new Date())}
-              className="text-sm font-semibold text-[#52B788] bg-[#76C893]/10 px-4 py-1.5 rounded-xl hover:bg-[#76C893]/20 transition-colors">
+              className="text-sm font-semibold text-[#15A06E] bg-[#2EC58A]/10 px-4 py-1.5 rounded-xl hover:bg-[#2EC58A]/20 transition-colors">
               今日
             </button>
           </div>
@@ -975,7 +979,7 @@ export default function HomePage() {
                 <div className="text-center py-12 text-gray-400 text-sm">読み込み中...</div>
               ) : dayTasks.length === 0 ? (
                 <div className="text-center py-12">
-                  <p className="text-4xl mb-3">📭</p>
+                  <Inbox size={44} className="mx-auto mb-3 text-gray-200" />
                   <p className="text-sm text-gray-400">この日のタスクはありません</p>
                 </div>
               ) : (
@@ -990,14 +994,14 @@ export default function HomePage() {
                           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 16 }}
                           transition={{ delay: i * 0.03 }}
                           className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${
-                            isDone ? 'bg-[#F7FDF9] border-[#76C893]/15' : 'bg-gray-50/70 border-gray-100 hover:bg-[#F0FBF4]/60'
+                            isDone ? 'bg-[#FAFFFD] border-[#2EC58A]/15' : 'bg-gray-50/70 border-gray-100 hover:bg-[#EFFCF6]/60'
                           }`}>
 
                           <motion.button onClick={() => !isDone && handleComplete(task)} whileTap={!isDone ? { scale: 0.85 } : {}}
                             className={`shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
                               isDone
-                                ? 'border-[#76C893] bg-gradient-to-br from-[#76C893] to-[#52B788] shadow-sm'
-                                : 'border-[#76C893]/40 hover:border-[#76C893] hover:bg-[#76C893]/5 cursor-pointer'
+                                ? 'border-[#2EC58A] bg-gradient-to-br from-[#2EC58A] to-[#15A06E] shadow-sm'
+                                : 'border-[#2EC58A]/40 hover:border-[#2EC58A] hover:bg-[#2EC58A]/5 cursor-pointer'
                             }`}>
                             {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-sm font-bold">✓</motion.span>}
                           </motion.button>
@@ -1005,13 +1009,13 @@ export default function HomePage() {
                           <button onClick={() => canEdit && setEditingTask(task)} className={`flex-1 min-w-0 text-left ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}>
                             <div className="flex items-center gap-1.5 min-w-0">
                               <p className={`text-base font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</p>
-                              {task.recurrence_rule_id && <span className="shrink-0 text-gray-300 text-xs">🔁</span>}
+                              {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-gray-300" />}
                               {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-gray-300 border border-gray-200 px-1.5 py-0.5 rounded-full">予定</span>}
                             </div>
-                            {task.category && <span className="text-[11px] text-[#76C893] font-medium">{task.category}</span>}
+                            {task.category && <span className="text-[11px] text-[#2EC58A] font-medium">{task.category}</span>}
                           </button>
 
-                          {isDone && <span className="shrink-0 text-[10px] font-bold text-[#52B788] bg-[#76C893]/10 px-2.5 py-1 rounded-full">DONE</span>}
+                          {isDone && <span className="shrink-0 text-[10px] font-bold text-[#15A06E] bg-[#2EC58A]/10 px-2.5 py-1 rounded-full">DONE</span>}
                         </motion.div>
                       );
                     })}

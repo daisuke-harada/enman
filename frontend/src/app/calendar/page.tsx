@@ -9,12 +9,12 @@ import type { CalendarDayItem, CalendarTaskItem } from '@/api-client/types.gen';
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
 const MEMBER_COLORS = [
-  'bg-[#76C893]',
-  'bg-[#FF9E00]',
-  'bg-[#74B9FF]',
-  'bg-[#FD79A8]',
+  'bg-[#2EC58A]',
+  'bg-[#FF6F9C]',
+  'bg-[#60A5FA]',
+  'bg-[#E84E80]',
   'bg-[#A29BFE]',
-  'bg-[#FDCB6E]',
+  'bg-[#93E5BF]',
 ];
 
 function useMemberColorMap(days: CalendarDayItem[]) {
@@ -54,13 +54,13 @@ function DayCell({
     <button
       onClick={onClick}
       className={`relative flex flex-col items-center pt-1.5 pb-1 rounded-2xl min-h-[52px] transition-all active:scale-95 ${
-        isCurrentMonth ? 'hover:bg-[#F0FBF4]' : 'opacity-40'
-      } ${isToday ? 'bg-[#E8F8EE]' : ''}`}
+        isCurrentMonth ? 'hover:bg-[#EFFCF6]' : 'opacity-40'
+      } ${isToday ? 'bg-[#E6FAEF]' : ''}`}
     >
       <span
         className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full ${
           isToday
-            ? 'bg-gradient-to-br from-[#76C893] to-[#52B788] text-white shadow-md'
+            ? 'bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white shadow-md'
             : 'text-gray-700'
         }`}
       >
@@ -139,7 +139,7 @@ function DayDetail({
               return (
                 <li
                   key={i}
-                  className="flex items-center gap-3 bg-[#F7FDF9] rounded-2xl px-4 py-3"
+                  className="flex items-center gap-3 bg-[#FAFFFD] rounded-2xl px-4 py-3"
                 >
                   <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${color} ${isDone ? '' : 'opacity-40'}`} />
                   <div className="flex-1 min-w-0">
@@ -152,7 +152,7 @@ function DayDetail({
                       {task.title}
                     </p>
                     {task.category && (
-                      <span className="text-[10px] text-[#76C893] font-medium">{task.category}</span>
+                      <span className="text-[10px] text-[#2EC58A] font-medium">{task.category}</span>
                     )}
                   </div>
                   <span className="text-xs text-gray-400 shrink-0">{task.user_name}</span>
@@ -220,7 +220,7 @@ export default function CalendarPage() {
         >
           <button
             onClick={prevMonth}
-            className="w-9 h-9 rounded-2xl bg-white/80 border border-white/60 shadow-sm flex items-center justify-center text-gray-500 hover:text-[#52B788] transition-colors"
+            className="w-9 h-9 rounded-2xl bg-white/80 border border-white/60 shadow-sm flex items-center justify-center text-gray-500 hover:text-[#15A06E] transition-colors"
           >
             ‹
           </button>
@@ -229,7 +229,7 @@ export default function CalendarPage() {
           </h2>
           <button
             onClick={nextMonth}
-            className="w-9 h-9 rounded-2xl bg-white/80 border border-white/60 shadow-sm flex items-center justify-center text-gray-500 hover:text-[#52B788] transition-colors"
+            className="w-9 h-9 rounded-2xl bg-white/80 border border-white/60 shadow-sm flex items-center justify-center text-gray-500 hover:text-[#15A06E] transition-colors"
           >
             ›
           </button>
@@ -270,7 +270,7 @@ export default function CalendarPage() {
               return (
                 <div
                   key={dateStr}
-                  className={`rounded-2xl ${isSelected ? 'ring-2 ring-[#76C893]' : ''}`}
+                  className={`rounded-2xl ${isSelected ? 'ring-2 ring-[#2EC58A]' : ''}`}
                 >
                   <DayCell
                     date={date}

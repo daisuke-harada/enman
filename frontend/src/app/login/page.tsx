@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useLogin, useRegister } from '@/hooks/useAuth';
+import { EnmanMark } from '@/components/EnmanMark';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -60,9 +61,9 @@ export default function LoginPage() {
             initial={{ scale: 0.8 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.1, type: 'spring', stiffness: 200 }}
-            className="inline-flex items-center justify-center w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#76C893] to-[#52B788] shadow-xl shadow-green-200/50 mb-4"
+            className="inline-flex items-center justify-center w-20 h-20 rounded-[28px] bg-gradient-to-br from-[#2EC58A] to-[#15A06E] shadow-xl shadow-green-200/50 mb-4"
           >
-            <span className="text-4xl">🍏</span>
+            <EnmanMark size={56} />
           </motion.div>
           <h1 className="text-3xl font-bold text-gray-800 tracking-tight">enman</h1>
           <p className="text-sm text-gray-400 mt-1">家族の感謝を可視化するアプリ</p>

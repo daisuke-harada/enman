@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, RefreshCw } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { useCreateTask, useTaskTemplates } from '@/hooks/useTasks';
 import { useCreateRecurrenceRule } from '@/hooks/useCalendar';
@@ -80,8 +81,8 @@ export default function NewTaskPage() {
       >
         <div className="md:hidden">
           <div className="flex items-center gap-3 mb-1">
-            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#76C893] to-[#52B788] flex items-center justify-center shadow-md">
-              <span className="text-base">➕</span>
+            <div className="w-8 h-8 rounded-2xl bg-gradient-to-br from-[#2EC58A] to-[#15A06E] flex items-center justify-center shadow-md">
+              <Plus size={16} className="text-white" strokeWidth={2.5} />
             </div>
             <h1 className="text-xl font-bold text-gray-800">タスクを追加</h1>
           </div>
@@ -107,21 +108,21 @@ export default function NewTaskPage() {
                 onChange={(e) => { setTitle(e.target.value); setError(''); }}
                 placeholder="例：皿洗い"
                 autoFocus
-                className="w-full bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 focus:border-[#76C893] transition-all"
+                className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 focus:border-[#2EC58A] transition-all"
               />
             </div>
 
             {/* 繰り返しトグル */}
             <div className="flex items-center justify-between py-1">
               <div className="flex items-center gap-2">
-                <span className="text-base">🔁</span>
+                <RefreshCw size={15} className="text-[#8893A2]" strokeWidth={2} />
                 <span className="text-sm font-medium text-gray-700">繰り返す</span>
               </div>
               <button
                 type="button"
                 onClick={() => setIsRecurring((v) => !v)}
                 className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${
-                  isRecurring ? 'bg-[#76C893]' : 'bg-gray-200'
+                  isRecurring ? 'bg-[#2EC58A]' : 'bg-gray-200'
                 }`}
               >
                 <span
@@ -153,8 +154,8 @@ export default function NewTaskPage() {
                           onClick={() => setFrequency(f)}
                           className={`flex-1 py-2 rounded-2xl text-xs font-semibold transition-all ${
                             frequency === f
-                              ? 'bg-gradient-to-r from-[#76C893] to-[#52B788] text-white shadow-md'
-                              : 'bg-[#FFFAF0] text-gray-500 border border-gray-200/80'
+                              ? 'bg-gradient-to-r from-[#2EC58A] to-[#15A06E] text-white shadow-md'
+                              : 'bg-[#FFFCF6] text-gray-500 border border-gray-200/80'
                           }`}
                         >
                           {f === 'daily' ? '毎日' : f === 'weekly' ? '毎週' : '毎月'}
@@ -175,8 +176,8 @@ export default function NewTaskPage() {
                             onClick={() => setDayOfWeek(idx)}
                             className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
                               dayOfWeek === idx
-                                ? 'bg-[#76C893] text-white'
-                                : 'bg-[#FFFAF0] text-gray-500 border border-gray-200/60'
+                                ? 'bg-[#2EC58A] text-white'
+                                : 'bg-[#FFFCF6] text-gray-500 border border-gray-200/60'
                             }`}
                           >
                             {label}
@@ -196,7 +197,7 @@ export default function NewTaskPage() {
                         max={31}
                         value={dayOfMonth}
                         onChange={(e) => setDayOfMonth(Number(e.target.value))}
-                        className="w-20 bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40 text-center"
+                        className="w-20 bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 text-center"
                       />
                       <span className="text-xs text-gray-400">日</span>
                     </div>
@@ -209,7 +210,7 @@ export default function NewTaskPage() {
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="bg-[#FFFAF0] border border-gray-200/80 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#76C893]/40"
+                      className="bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40"
                     />
                   </div>
                 </motion.div>
@@ -235,7 +236,7 @@ export default function NewTaskPage() {
               type="submit"
               disabled={isPending}
               whileTap={{ scale: 0.95 }}
-              className="w-full bg-gradient-to-br from-[#76C893] to-[#52B788] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
+              className="w-full bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60"
             >
               {isPending ? '作成中...' : isRecurring ? '繰り返しタスクを作成' : 'タスクを追加'}
             </motion.button>
@@ -255,7 +256,7 @@ export default function NewTaskPage() {
                 className="bg-white/80 backdrop-blur-md rounded-[28px] p-5 shadow-card border border-white/60"
               >
                 <div className="flex items-center gap-2 mb-3">
-                  <span className="inline-block text-[10px] font-semibold text-[#76C893] bg-[#76C893]/10 px-2.5 py-1 rounded-full">
+                  <span className="inline-block text-[10px] font-semibold text-[#2EC58A] bg-[#2EC58A]/10 px-2.5 py-1 rounded-full">
                     {category}
                   </span>
                 </div>
@@ -266,7 +267,7 @@ export default function NewTaskPage() {
                       onClick={() => handleTemplate(tmpl)}
                       disabled={createTask.isPending}
                       whileTap={{ scale: 0.94 }}
-                      className="bg-[#FFFAF0] hover:bg-[#76C893]/10 border border-gray-200/80 hover:border-[#76C893]/40 text-gray-700 hover:text-[#52B788] text-sm px-4 py-2 rounded-full transition-all disabled:opacity-50 font-medium"
+                      className="bg-[#FFFCF6] hover:bg-[#2EC58A]/10 border border-gray-200/80 hover:border-[#2EC58A]/40 text-gray-700 hover:text-[#15A06E] text-sm px-4 py-2 rounded-full transition-all disabled:opacity-50 font-medium"
                     >
                       {tmpl.name}
                     </motion.button>
