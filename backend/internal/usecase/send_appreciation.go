@@ -90,6 +90,14 @@ func (i *SendAppreciationInteractor) Execute(ctx context.Context, input SendAppr
 		return nil, apperror.UnprocessableEntity("自分が完了したタスクにはコメントを送れません")
 	}
 
+	exists, err := i.AppreciationRepo.ExistsByTaskAndFromUser(ctx, input.TaskID, input.FromUserID)
+	if err != nil {
+		return nil, apperror.InternalServerError(err)
+	}
+	if exists {
+		return nil, apperror.UnprocessableEntity("すでに感謝を送っています")
+	}
+
 	appreciation := &model.Appreciation{
 		TaskID:     input.TaskID,
 		FromUserID: input.FromUserID,

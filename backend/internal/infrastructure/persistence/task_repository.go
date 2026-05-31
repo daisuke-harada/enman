@@ -8,6 +8,7 @@ import (
 	"github.com/daisuke-harada/enman/internal/domain/model"
 	"github.com/daisuke-harada/enman/internal/domain/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type taskRepository struct {
@@ -58,7 +59,9 @@ func (r *taskRepository) Search(ctx context.Context, params repository.TaskSearc
 }
 
 func (r *taskRepository) Update(ctx context.Context, task *model.Task) error {
-	return r.db.WithContext(ctx).Save(task).Error
+	// Omit(clause.Associations) で関連オブジェクト（Doer など）の upsert を抑制し、
+	// done_by 等の直接カラムだけを確実に保存する。
+	return r.db.WithContext(ctx).Omit(clause.Associations).Save(task).Error
 }
 
 func (r *taskRepository) Delete(ctx context.Context, id uint) error {

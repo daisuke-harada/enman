@@ -55,6 +55,21 @@ func (mr *MockAppreciationRepositoryMockRecorder) Create(ctx, appreciation any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockAppreciationRepository)(nil).Create), ctx, appreciation)
 }
 
+// ExistsByTaskAndFromUser mocks base method.
+func (m *MockAppreciationRepository) ExistsByTaskAndFromUser(ctx context.Context, taskID, fromUserID uint) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ExistsByTaskAndFromUser", ctx, taskID, fromUserID)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ExistsByTaskAndFromUser indicates an expected call of ExistsByTaskAndFromUser.
+func (mr *MockAppreciationRepositoryMockRecorder) ExistsByTaskAndFromUser(ctx, taskID, fromUserID any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExistsByTaskAndFromUser", reflect.TypeOf((*MockAppreciationRepository)(nil).ExistsByTaskAndFromUser), ctx, taskID, fromUserID)
+}
+
 // FindByFamilyID mocks base method.
 func (m *MockAppreciationRepository) FindByFamilyID(ctx context.Context, familyID uint) ([]*model.Appreciation, error) {
 	m.ctrl.T.Helper()

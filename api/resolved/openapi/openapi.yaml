@@ -1281,6 +1281,8 @@ components:
           user_id: 1
           user_name: user_name
           scheduled_date: 2000-01-23
+          done_by_user_id: 5
+          done_by_user_name: done_by_user_name
         - task_id: 0
           recurrence_rule_id: 6
           title: title
@@ -1289,6 +1291,8 @@ components:
           user_id: 1
           user_name: user_name
           scheduled_date: 2000-01-23
+          done_by_user_id: 5
+          done_by_user_name: done_by_user_name
       properties:
         date:
           format: date
@@ -1308,6 +1312,8 @@ components:
         user_id: 1
         user_name: user_name
         scheduled_date: 2000-01-23
+        done_by_user_id: 5
+        done_by_user_name: done_by_user_name
       properties:
         task_id:
           description: 実体化済みタスクの ID（まだ完了・作成されていない仮想インスタンスは null）
@@ -1335,6 +1341,15 @@ components:
           type: string
         scheduled_date:
           format: date
+          type: string
+        done_by_user_id:
+          description: 完了者のユーザーID（未完了は null）
+          format: int64
+          nullable: true
+          type: integer
+        done_by_user_name:
+          description: 完了者の名前（未完了は null）
+          nullable: true
           type: string
       type: object
     getHealth_200_response:

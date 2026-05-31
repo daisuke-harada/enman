@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Calendar, RefreshCw, Pin, Trash2, Inbox } from 'lucide-react';
-import { EnmanMark } from '@/components/EnmanMark';
-import { AppShell } from '@/components/AppShell';
-import { useCreateTask, useUpdateTask, useDeleteTask, useCompleteTask } from '@/hooks/useTasks';
-import { useCurrentUser } from '@/hooks/useCurrentUser';
-import { useSendAppreciation } from '@/hooks/useAppreciations';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Calendar, Heart, Inbox, Pin, RefreshCw, Trash2, User } from 'lucide-react';
+import type { CalendarTaskItem, TaskResponse } from '@/api-client/types.gen';
 import { useCalendar, useCreateRecurrenceRule, useDeleteRecurrenceRule } from '@/hooks/useCalendar';
-import type { TaskResponse, CalendarTaskItem } from '@/api-client/types.gen';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCompleteTask, useCreateTask, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
+
+import { AppShell } from '@/components/AppShell';
+import { EnmanMark } from '@/components/EnmanMark';
+import { useCurrentUser } from '@/hooks/useCurrentUser';
+import { useQueryClient } from '@tanstack/react-query';
+import { useRouter } from 'next/navigation';
+import { useSendAppreciation } from '@/hooks/useAppreciations';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 const WEEKDAY_LABELS_SHORT = ['日', '月', '火', '水', '木', '金', '土'];
@@ -35,6 +37,10 @@ async function launchConfetti() {
 
 function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function toLocalDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
 function getWeekDays(pivot: Date): Date[] {
@@ -254,7 +260,7 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
   const [dayOfMonth, setDayOfMonth] = useState(selectedDate.getDate());
   const [weekOfMonth, setWeekOfMonth] = useState(1);
   const [monthlyWeekday, setMonthlyWeekday] = useState(1);
-  const [startDate, setStartDate] = useState(() => selectedDate.toISOString().slice(0, 10));
+  const [startDate, setStartDate] = useState(() => toLocalDateStr(selectedDate));
   const [error, setError] = useState('');
   const createTask = useCreateTask();
   const createRule = useCreateRecurrenceRule();
@@ -266,7 +272,7 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
     setError('');
     try {
       if (recurrence === 'none') {
-        await createTask.mutateAsync({ title: title.trim(), scheduled_date: selectedDate.toISOString().slice(0, 10) });
+        await createTask.mutateAsync({ title: title.trim(), scheduled_date: toLocalDateStr(selectedDate) });
       } else if (recurrence === 'daily') {
         await createRule.mutateAsync({ title: title.trim(), frequency: 'daily', start_date: startDate });
       } else if (recurrence === 'weekly') {
@@ -442,7 +448,7 @@ function MonthCalendarSheet({ year, month, dayTaskMap, selectedDate, onSelectDat
   onClose: () => void;
 }) {
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = toLocalDateStr(today);
   const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 0);
   const cells: Array<Date | null> = [
@@ -466,7 +472,7 @@ function MonthCalendarSheet({ year, month, dayTaskMap, selectedDate, onSelectDat
       <div className="grid grid-cols-7 gap-0.5">
         {cells.map((date, idx) => {
           if (!date) return <div key={`e-${idx}`} className="min-h-[40px]" />;
-          const dateStr = date.toISOString().slice(0, 10);
+          const dateStr = toLocalDateStr(date);
           const tasks = dayTaskMap.get(dateStr) ?? [];
           const isToday = dateStr === todayStr;
           const isSelected = isSameDay(date, selectedDate);
@@ -490,41 +496,75 @@ function MonthCalendarSheet({ year, month, dayTaskMap, selectedDate, onSelectDat
   );
 }
 
-// ---- コメントフォーム ----
-function CommentForm({ taskId, currentUserId, doneBy, comments }: {
-  taskId: number; currentUserId: number; doneBy?: number | null;
-  comments?: { from_user_id?: number; from_user_name?: string; message?: string | null }[];
-}) {
+// ---- 感謝シート ----
+function AppreciationSheet({ taskId, onClose, onSent }: { taskId: number; onClose: () => void; onSent: () => void }) {
   const sendAppreciation = useSendAppreciation();
   const [text, setText] = useState('');
-  const [sent, setSent] = useState(false);
-  if (!doneBy || doneBy === currentUserId) return null;
-  const alreadySent = comments?.some(c => c.from_user_id === currentUserId) ?? false;
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!text.trim() || sendAppreciation.isPending) return;
-    await sendAppreciation.mutateAsync({ taskId, body: { message: text.trim() } });
-    setText(''); setSent(true);
+    if (!text.trim()) return;
+    setError('');
+    try {
+      await sendAppreciation.mutateAsync({ taskId, body: { message: text.trim() } });
+      onSent();
+      setDone(true);
+      setTimeout(onClose, 1800);
+    } catch {
+      setError('送信できませんでした。自分が完了したタスクには送れません。');
+    }
   };
+
   return (
-    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="mt-3 pl-4 space-y-1.5">
-      {comments && comments.length > 0 && (
-        <div className="space-y-1">
-          {comments.map((c, i) => (
-            <p key={i} className="text-xs text-gray-500"><span className="font-semibold text-[#15A06E]">{c.from_user_name}</span>{': '}{c.message}</p>
-          ))}
-        </div>
-      )}
-      {!alreadySent && (
-        <form onSubmit={handleSubmit} className="flex gap-2">
-          <input type="text" value={text} onChange={e => setText(e.target.value)} placeholder="コメントを送る..." maxLength={255}
-            className="flex-1 bg-[#FAFFFD] border border-[#2EC58A]/30 rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-[#2EC58A]/50" />
-          <motion.button type="submit" disabled={!text.trim() || sendAppreciation.isPending} whileTap={{ scale: 0.95 }} className="text-xs font-semibold text-[#15A06E] disabled:opacity-40 px-2">
-            {sent ? '✓' : '送信'}
-          </motion.button>
+    <BottomSheet onClose={onClose} title="感謝を伝える">
+      {done ? (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center py-8"
+        >
+          <p className="text-5xl mb-3">🙏</p>
+          <p className="text-sm font-bold text-[#FF6F9C]">ありがとうが届きました！</p>
+          <p className="text-xs text-gray-400 mt-1">ポイントが加算されます</p>
+        </motion.div>
+      ) : (
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <textarea
+            value={text}
+            onChange={(e) => { setText(e.target.value); setError(''); }}
+            placeholder="感謝の気持ちを伝えましょう..."
+            maxLength={255}
+            rows={4}
+            autoFocus
+            className="w-full bg-[#FFFCF6] border border-[#FF6F9C]/30 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#FF6F9C]/40 focus:border-[#FF6F9C] resize-none transition-all placeholder:text-gray-300"
+          />
+          <p className="text-[10px] text-gray-300 text-right -mt-2">{text.length}/255</p>
+          {error && (
+            <motion.p initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+              className="text-xs text-red-500 bg-red-50 rounded-2xl px-4 py-2.5">
+              {error}
+            </motion.p>
+          )}
+          <div className="flex gap-2 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-[#586577] bg-[#F4F6F8]">
+              キャンセル
+            </button>
+            <motion.button
+              type="submit"
+              disabled={!text.trim() || sendAppreciation.isPending}
+              whileTap={{ scale: 0.96 }}
+              className="flex-1 bg-gradient-to-br from-[#FF6F9C] to-[#E84E80] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-pink-200/50 disabled:opacity-60 flex items-center justify-center gap-2"
+            >
+              <Heart size={14} />
+              {sendAppreciation.isPending ? '送信中...' : '感謝を送る'}
+            </motion.button>
+          </div>
         </form>
       )}
-    </motion.div>
+    </BottomSheet>
   );
 }
 
@@ -565,7 +605,7 @@ function DesktopMonthCalendar({ year, month, dayTaskMap, selectedDate, onSelectD
   onPrevMonth: () => void; onNextMonth: () => void;
 }) {
   const today = new Date();
-  const todayStr = today.toISOString().slice(0, 10);
+  const todayStr = toLocalDateStr(today);
   const firstDay = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 0);
   const cells: Array<Date | null> = [
@@ -601,7 +641,7 @@ function DesktopMonthCalendar({ year, month, dayTaskMap, selectedDate, onSelectD
       <div className="flex-1 min-h-0 grid grid-cols-7 gap-1" style={{ gridTemplateRows: `repeat(${weeks}, 1fr)` }}>
         {cells.map((date, idx) => {
           if (!date) return <div key={`e-${idx}`} className="rounded-2xl" />;
-          const dateStr = date.toISOString().slice(0, 10);
+          const dateStr = toLocalDateStr(date);
           const tasks = dayTaskMap.get(dateStr) ?? [];
           const preview = tasks.slice(0, 3);
           const more = tasks.length - 3;
@@ -657,7 +697,7 @@ function DesktopInlineTaskForm({ selectedDate }: { selectedDate: Date }) {
   const [dayOfMonth, setDayOfMonth] = useState(selectedDate.getDate());
   const [weekOfMonth, setWeekOfMonth] = useState(1);
   const [monthlyWeekday, setMonthlyWeekday] = useState(1);
-  const [startDate, setStartDate] = useState(() => selectedDate.toISOString().slice(0, 10));
+  const [startDate, setStartDate] = useState(() => toLocalDateStr(selectedDate));
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
@@ -747,7 +787,10 @@ export default function HomePage() {
   const [showCreate, setShowCreate] = useState(false);
   const [showCalendar, setShowCalendar] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskResponse | CalendarTaskItem | null>(null);
+  const [appreciatingTaskId, setAppreciatingTaskId] = useState<number | null>(null);
+  const [sentTaskIds, setSentTaskIds] = useState<Set<number>>(new Set());
 
+  const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const completeTask = useCompleteTask();
   const createTask = useCreateTask();
@@ -759,7 +802,7 @@ export default function HomePage() {
   const dayTaskMap = new Map<string, CalendarTaskItem[]>();
   for (const d of calendarDays) { if (d.date) dayTaskMap.set(d.date, d.tasks ?? []); }
 
-  const selectedDateStr = selectedDate.toISOString().slice(0, 10);
+  const selectedDateStr = toLocalDateStr(selectedDate);
   const dayTasks = dayTaskMap.get(selectedDateStr) ?? [];
   const doneTasks = dayTasks.filter(t => t.status === 'done').length;
 
@@ -787,10 +830,13 @@ export default function HomePage() {
       }
       if (taskId) {
         await completeTask.mutateAsync(taskId);
+        // createTask.onSuccess がカレンダーを先にフェッチする競合を避けるため、
+        // 全 mutation 完了後に明示的に再フェッチして確実に done 状態を反映させる。
+        await queryClient.invalidateQueries({ queryKey: ['calendar'] });
         await launchConfetti();
       }
     } catch { /* mutation handles error */ }
-  }, [completeTask, createTask]);
+  }, [completeTask, createTask, queryClient]);
 
   const prevMonth = () => { if (calMonth === 1) { setCalYear(y => y - 1); setCalMonth(12); } else setCalMonth(m => m - 1); };
   const nextMonth = () => { if (calMonth === 12) { setCalYear(y => y + 1); setCalMonth(1); } else setCalMonth(m => m + 1); };
@@ -848,7 +894,7 @@ export default function HomePage() {
             </div>
             <div ref={weekRef} className="grid grid-cols-7 gap-0.5">
               {weekDays.map((date) => {
-                const dateStr = date.toISOString().slice(0, 10);
+                const dateStr = toLocalDateStr(date);
                 const tasks = dayTaskMap.get(dateStr) ?? [];
                 const isToday = isSameDay(date, today);
                 const isSelected = isSameDay(date, selectedDate);
@@ -901,7 +947,13 @@ export default function HomePage() {
                     <motion.div key={`${task.recurrence_rule_id ?? 'task'}-${i}`}
                       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 20 }}
                       transition={{ delay: i * 0.03 }}
-                      className={`bg-white/85 backdrop-blur-md rounded-[22px] px-4 py-3.5 shadow-card border flex items-center gap-3 ${isDone ? 'border-[#2EC58A]/20' : 'border-white/60'}`}>
+                      className={`rounded-[22px] px-4 py-3 border flex items-center gap-3 ${
+                        isDone
+                          ? 'bg-[#EFFCF6] border-[#2EC58A]/20 shadow-[0_2px_12px_rgba(46,197,138,0.08)]'
+                          : 'bg-white/85 backdrop-blur-md border-white/60 shadow-card'
+                      }`}>
+
+                      {/* 完了チェック */}
                       <motion.button onClick={() => !isDone && handleComplete(task)} whileTap={!isDone ? { scale: 0.85 } : {}}
                         className={`shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
                           isDone ? 'border-[#2EC58A] bg-gradient-to-br from-[#2EC58A] to-[#15A06E] shadow-md shadow-green-200/40'
@@ -910,20 +962,48 @@ export default function HomePage() {
                         }`}>
                         {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-sm font-bold">✓</motion.span>}
                       </motion.button>
-                      <button onClick={() => canEdit && setEditingTask(task)} className={`flex-1 min-w-0 text-left ${canEdit ? '' : 'cursor-default'}`}>
+
+                      {/* タスク情報（div + onClick でネスト問題を回避） */}
+                      <div
+                        className={`flex-1 min-w-0 ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}
+                        onClick={() => canEdit && setEditingTask(task)}
+                      >
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <p className={`text-sm font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</p>
-                          {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-gray-300" />}
-                          {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-gray-300 border border-gray-200 px-1.5 py-0.5 rounded-full font-medium">予定</span>}
+                          <span className={`flex-1 min-w-0 text-sm font-semibold truncate ${isDone ? 'line-through text-black' : 'text-black'}`}>{task.title}</span>
+                          {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-[#AEB8C4]" />}
+                          {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-[#AEB8C4] border border-[#AEB8C4]/40 px-1.5 py-0.5 rounded-full font-medium">予定</span>}
                         </div>
                         {task.category && <span className="text-[10px] text-[#2EC58A] font-medium">{task.category}</span>}
-                      </button>
-                      <div className="shrink-0 text-right">
-                        {isDone
-                          ? <span className="text-[10px] font-bold text-[#15A06E] bg-[#2EC58A]/10 px-2 py-1 rounded-full">DONE</span>
-                          : task.user_name && <span className="text-[10px] text-gray-400">{task.user_name}</span>
-                        }
+
+                        {/* 完了者行 */}
+                        {isDone && task.done_by_user_name && (
+                          <div className="flex items-center gap-1 mt-1.5">
+                            <div className="w-4 h-4 rounded-full bg-[#2EC58A]/25 flex items-center justify-center">
+                              <User size={9} className="text-[#15A06E]" />
+                            </div>
+                            <span className="text-[10px] text-[#586577] font-medium">{task.done_by_user_name}さんが完了</span>
+                          </div>
+                        )}
                       </div>
+
+                      {/* 右: ありがとうボタン */}
+                      {isDone && task.task_id && task.done_by_user_id !== user?.id && (
+                        sentTaskIds.has(task.task_id) ? (
+                          <span className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
+                            <Heart size={10} fill="#FF6F9C" />
+                            ありがとう
+                          </span>
+                        ) : (
+                          <motion.button
+                            onClick={() => setAppreciatingTaskId(task.task_id!)}
+                            whileTap={{ scale: 0.92 }}
+                            className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-white border border-[#FF6F9C]/40 px-2.5 py-1.5 rounded-full hover:bg-[#FF6F9C]/10 transition-all"
+                          >
+                            <Heart size={10} />
+                            ありがとう
+                          </motion.button>
+                        )
+                      )}
                     </motion.div>
                   );
                 })}
@@ -994,9 +1074,12 @@ export default function HomePage() {
                           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 16 }}
                           transition={{ delay: i * 0.03 }}
                           className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${
-                            isDone ? 'bg-[#FAFFFD] border-[#2EC58A]/15' : 'bg-gray-50/70 border-gray-100 hover:bg-[#EFFCF6]/60'
+                            isDone
+                              ? 'bg-[#EFFCF6] border-[#2EC58A]/20'
+                              : 'bg-gray-50/70 border-gray-100 hover:bg-[#EFFCF6]/60'
                           }`}>
 
+                          {/* 完了チェック */}
                           <motion.button onClick={() => !isDone && handleComplete(task)} whileTap={!isDone ? { scale: 0.85 } : {}}
                             className={`shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
                               isDone
@@ -1006,16 +1089,46 @@ export default function HomePage() {
                             {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-sm font-bold">✓</motion.span>}
                           </motion.button>
 
-                          <button onClick={() => canEdit && setEditingTask(task)} className={`flex-1 min-w-0 text-left ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}>
+                          {/* タスク情報 */}
+                          <div
+                            className={`flex-1 min-w-0 ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}
+                            onClick={() => canEdit && setEditingTask(task)}
+                          >
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <p className={`text-base font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</p>
-                              {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-gray-300" />}
-                              {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-gray-300 border border-gray-200 px-1.5 py-0.5 rounded-full">予定</span>}
+                              <span className={`text-base font-semibold truncate ${isDone ? 'line-through text-black' : 'text-black'}`}>{task.title}</span>
+                              {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-[#AEB8C4]" />}
+                              {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-[#AEB8C4] border border-[#AEB8C4]/40 px-1.5 py-0.5 rounded-full">予定</span>}
                             </div>
                             {task.category && <span className="text-[11px] text-[#2EC58A] font-medium">{task.category}</span>}
-                          </button>
 
-                          {isDone && <span className="shrink-0 text-[10px] font-bold text-[#15A06E] bg-[#2EC58A]/10 px-2.5 py-1 rounded-full">DONE</span>}
+                            {isDone && task.done_by_user_name && (
+                              <div className="flex items-center gap-1 mt-1.5">
+                                <div className="w-4 h-4 rounded-full bg-[#2EC58A]/25 flex items-center justify-center">
+                                  <User size={9} className="text-[#15A06E]" />
+                                </div>
+                                <span className="text-[11px] text-[#586577] font-medium">{task.done_by_user_name}さんが完了</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* 右: ありがとうボタン */}
+                          {isDone && task.task_id && task.done_by_user_id !== user?.id && (
+                            sentTaskIds.has(task.task_id) ? (
+                              <span className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
+                                <Heart size={10} fill="#FF6F9C" />
+                                ありがとう
+                              </span>
+                            ) : (
+                              <motion.button
+                                onClick={() => setAppreciatingTaskId(task.task_id!)}
+                                whileTap={{ scale: 0.92 }}
+                                className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-white border border-[#FF6F9C]/40 px-2.5 py-1.5 rounded-full hover:bg-[#FF6F9C]/10 transition-all"
+                              >
+                                <Heart size={10} />
+                                ありがとう
+                              </motion.button>
+                            )
+                          )}
                         </motion.div>
                       );
                     })}
@@ -1044,6 +1157,13 @@ export default function HomePage() {
       <AnimatePresence>
         {showCreate && <TaskCreateModal selectedDate={selectedDate} onClose={() => setShowCreate(false)} />}
         {editingTask && <TaskEditModal task={editingTask} onClose={() => setEditingTask(null)} />}
+        {appreciatingTaskId && (
+          <AppreciationSheet
+            taskId={appreciatingTaskId}
+            onClose={() => setAppreciatingTaskId(null)}
+            onSent={() => setSentTaskIds(prev => new Set(prev).add(appreciatingTaskId!))}
+          />
+        )}
         {showCalendar && (
           <MonthCalendarSheet
             year={calYear} month={calMonth} dayTaskMap={dayTaskMap}
