@@ -137,7 +137,13 @@ type CalendarDayItem struct {
 
 // CalendarTaskItem defines model for CalendarTaskItem.
 type CalendarTaskItem struct {
-	Category         *string                 `json:"category,omitempty"`
+	Category *string `json:"category,omitempty"`
+
+	// DoneByUserId 完了者のユーザーID（未完了は null）
+	DoneByUserId *int64 `json:"done_by_user_id,omitempty"`
+
+	// DoneByUserName 完了者の名前（未完了は null）
+	DoneByUserName   *string                 `json:"done_by_user_name,omitempty"`
 	RecurrenceRuleId *int64                  `json:"recurrence_rule_id,omitempty"`
 	ScheduledDate    *openapi_types.Date     `json:"scheduled_date,omitempty"`
 	Status           *CalendarTaskItemStatus `json:"status,omitempty"`

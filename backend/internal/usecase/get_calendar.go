@@ -28,6 +28,8 @@ type CalendarTask struct {
 	UserID           uint
 	UserName         string
 	ScheduledDate    time.Time
+	DoneByUserID     *uint
+	DoneByUserName   string
 }
 
 type CalendarDay struct {
@@ -118,7 +120,7 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 				// 実体化済みタスクを使う
 				taskIDCopy := actual.ID
 				ruleIDCopy := rule.ID
-				days[idx].Tasks = append(days[idx].Tasks, CalendarTask{
+				ct := CalendarTask{
 					TaskID:           &taskIDCopy,
 					RecurrenceRuleID: &ruleIDCopy,
 					Title:            actual.Title,
@@ -127,7 +129,13 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 					UserID:           actual.CreatedBy,
 					UserName:         memberMap[actual.CreatedBy],
 					ScheduledDate:    date,
-				})
+				}
+				if actual.DoneBy != nil {
+					doneByIDCopy := *actual.DoneBy
+					ct.DoneByUserID = &doneByIDCopy
+					ct.DoneByUserName = memberMap[doneByIDCopy]
+				}
+				days[idx].Tasks = append(days[idx].Tasks, ct)
 			} else {
 				// 仮想インスタンス
 				ruleIDCopy := rule.ID
@@ -156,7 +164,7 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 		dateStr := t.ScheduledDate.Format("2006-01-02")
 		if idx, ok := dayIndex[dateStr]; ok {
 			taskIDCopy := t.ID
-			days[idx].Tasks = append(days[idx].Tasks, CalendarTask{
+			ct := CalendarTask{
 				TaskID:        &taskIDCopy,
 				Title:         t.Title,
 				Category:      t.Category,
@@ -164,7 +172,13 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 				UserID:        t.CreatedBy,
 				UserName:      memberMap[t.CreatedBy],
 				ScheduledDate: *t.ScheduledDate,
-			})
+			}
+			if t.DoneBy != nil {
+				doneByIDCopy := *t.DoneBy
+				ct.DoneByUserID = &doneByIDCopy
+				ct.DoneByUserName = memberMap[doneByIDCopy]
+			}
+			days[idx].Tasks = append(days[idx].Tasks, ct)
 		}
 	}
 

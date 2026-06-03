@@ -1017,3 +1017,12 @@ components:
         scheduled_date:
           type: string
           format: date
+        done_by_user_id:
+          type: integer
+          format: int64
+          nullable: true
+          description: "完了者のユーザーID（未完了は null）"
+        done_by_user_name:
+          type: string
+          nullable: true
+          description: "完了者の名前（未完了は null）"

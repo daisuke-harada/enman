@@ -38,6 +38,7 @@ func TestSendAppreciationInteractor_Execute(t *testing.T) {
 
 		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(fromUser, nil)
 		mockTaskRepo.EXPECT().FindByID(ctx, uint(5)).Return(doneTask, nil)
+		mockAppreciationRepo.EXPECT().ExistsByTaskAndFromUser(ctx, uint(5), uint(10)).Return(false, nil)
 		mockAppreciationRepo.EXPECT().Create(ctx, gomock.Any()).Return(nil)
 		mockUserRepo.EXPECT().Update(ctx, gomock.Any()).Return(nil)
 		mockUserRepo.EXPECT().FindByID(ctx, doneByUserID).Return(toUser, nil)
@@ -98,6 +99,26 @@ func TestSendAppreciationInteractor_Execute(t *testing.T) {
 		})
 		if err == nil {
 			t.Error("expected error for self-completed task")
+		}
+	})
+
+	t.Run("重複送信は拒否", func(t *testing.T) {
+		mockAppreciationRepo := repositorymock.NewMockAppreciationRepository(ctrl)
+		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
+		mockUserRepo := repositorymock.NewMockUserRepository(ctrl)
+
+		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(&model.User{ID: 10, FamilyID: &familyID}, nil)
+		mockTaskRepo.EXPECT().FindByID(ctx, uint(5)).Return(doneTask, nil)
+		mockAppreciationRepo.EXPECT().ExistsByTaskAndFromUser(ctx, uint(5), uint(10)).Return(true, nil)
+
+		interactor := usecase.NewSendAppreciationInteractor(mockAppreciationRepo, mockTaskRepo, mockUserRepo)
+		_, err := interactor.Execute(ctx, usecase.SendAppreciationInput{
+			TaskID:     5,
+			FromUserID: 10,
+			Message:    "ありがとう",
+		})
+		if err == nil {
+			t.Error("expected error for duplicate appreciation")
 		}
 	})
 

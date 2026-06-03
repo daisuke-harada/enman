@@ -206,6 +206,11 @@ func NewCalendarDayItemResponse(day usecase.CalendarDay) CalendarDayItem {
 			rid := int64(*t.RecurrenceRuleID)
 			item.RecurrenceRuleId = &rid
 		}
+		if t.DoneByUserID != nil {
+			did := int64(*t.DoneByUserID)
+			item.DoneByUserId = &did
+			item.DoneByUserName = &t.DoneByUserName
+		}
 		tasks = append(tasks, item)
 	}
 	return CalendarDayItem{

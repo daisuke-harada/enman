@@ -1,12 +1,13 @@
 'use client';
 
+import { BarChart2, CheckSquare, User } from 'lucide-react';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { CheckSquare, BarChart2, User } from 'lucide-react';
 
 const tabs = [
   { href: '/',          label: 'タスク',     Icon: CheckSquare },
-  { href: '/dashboard', label: '統計',       Icon: BarChart2   },
+  { href: '/dashboard', label: 'ダッシュボード',       Icon: BarChart2   },
   { href: '/profile',   label: 'マイページ', Icon: User        },
 ];
 

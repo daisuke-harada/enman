@@ -34,6 +34,17 @@ func (r *appreciationRepository) FindByToUserID(ctx context.Context, toUserID ui
 	return appreciations, nil
 }
 
+func (r *appreciationRepository) ExistsByTaskAndFromUser(ctx context.Context, taskID uint, fromUserID uint) (bool, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&model.Appreciation{}).
+		Where("task_id = ? AND from_user_id = ?", taskID, fromUserID).
+		Count(&count).Error
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
+}
+
 func (r *appreciationRepository) FindByFamilyID(ctx context.Context, familyID uint) ([]*model.Appreciation, error) {
 	var appreciations []*model.Appreciation
 	err := r.db.WithContext(ctx).
