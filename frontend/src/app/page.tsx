@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Calendar, Heart, Inbox, Pin, RefreshCw, Trash2, User } from 'lucide-react';
+import { Calendar, Heart, Inbox, Pencil, Pin, RefreshCw, Trash2, User } from 'lucide-react';
 import type { CalendarTaskItem, TaskResponse } from '@/api-client/types.gen';
 import { useCalendar, useCreateRecurrenceRule, useDeleteRecurrenceRule } from '@/hooks/useCalendar';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -321,33 +321,56 @@ function TaskCreateModal({ selectedDate, onClose }: { selectedDate: Date; onClos
 }
 
 // ---- タスク編集モーダル ----
-type DeleteMode = null | 'simple' | 'choose';
+type DeleteMode = null | 'choose';
 
 function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskItem; onClose: () => void }) {
   const title = 'title' in task ? (task.title ?? '') : '';
   const [editTitle, setEditTitle] = useState(title);
   const [error, setError] = useState('');
   const [deleteMode, setDeleteMode] = useState<DeleteMode>(null);
+  const [confirmDeleteAll, setConfirmDeleteAll] = useState(false);
   const updateTask = useUpdateTask();
+  const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
   const deleteRule = useDeleteRecurrenceRule();
   const taskId = 'id' in task ? task.id : ('task_id' in task ? task.task_id : undefined);
   const ruleId = task.recurrence_rule_id ?? undefined;
-  const isPending = updateTask.isPending || deleteTask.isPending || deleteRule.isPending;
+  const isPending = updateTask.isPending || createTask.isPending || deleteTask.isPending || deleteRule.isPending;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!editTitle.trim() || !taskId) return;
+    if (!editTitle.trim()) return;
     try {
-      await updateTask.mutateAsync({ taskId, title: editTitle.trim(), category: task.category });
+      if (taskId) {
+        await updateTask.mutateAsync({ taskId, title: editTitle.trim(), category: task.category });
+      } else {
+        await createTask.mutateAsync({
+          title: editTitle.trim(),
+          category: task.category ?? undefined,
+          recurrence_rule_id: task.recurrence_rule_id ?? undefined,
+          scheduled_date: 'scheduled_date' in task ? task.scheduled_date ?? undefined : undefined,
+        });
+      }
       onClose();
     } catch { setError('更新に失敗しました'); }
   };
 
   const handleDeleteSingle = async () => {
-    if (!taskId) return;
     try {
-      await deleteTask.mutateAsync(taskId);
+      if (taskId) {
+        await deleteTask.mutateAsync(taskId);
+      } else {
+        // 仮想タスク（未来の繰り返し）: 実体化してから即削除でこの日をスキップ
+        const created = await createTask.mutateAsync({
+          title: title || editTitle.trim(),
+          category: task.category ?? undefined,
+          recurrence_rule_id: ruleId,
+          scheduled_date: 'scheduled_date' in task ? task.scheduled_date ?? undefined : undefined,
+        });
+        if (created?.id) {
+          await deleteTask.mutateAsync(created.id);
+        }
+      }
       onClose();
     } catch { setError('削除に失敗しました'); }
   };
@@ -360,79 +383,72 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
     } catch { setError('削除に失敗しました'); }
   };
 
-  if (!taskId) return null;
-
-  // --- 繰り返し削除: スコープ選択 ---
-  if (deleteMode === 'choose') {
-    return (
-      <BottomSheet onClose={onClose} title="削除する範囲を選択">
-        <div className="space-y-3">
-          <p className="text-xs text-gray-400 text-center pb-1">「{title}」をどの範囲で削除しますか？</p>
-
-          <motion.button onClick={handleDeleteSingle} disabled={isPending} whileTap={{ scale: 0.97 }}
-            className="w-full flex items-start gap-3 px-4 py-4 rounded-2xl border-2 border-orange-200/80 bg-orange-50/60 hover:bg-orange-100/60 transition-colors text-left disabled:opacity-60">
-            <Pin size={20} className="shrink-0 mt-0.5 text-orange-600" />
-            <div>
-              <p className="text-sm font-bold text-orange-700">このタスクのみ削除</p>
-              <p className="text-xs text-orange-500/80 mt-0.5 leading-relaxed">この1件だけを削除します。<br />繰り返し設定は維持されます。</p>
-            </div>
-          </motion.button>
-
-          <motion.button onClick={handleDeleteAll} disabled={isPending} whileTap={{ scale: 0.97 }}
-            className="w-full flex items-start gap-3 px-4 py-4 rounded-2xl border-2 border-red-200/80 bg-red-50/60 hover:bg-red-100/60 transition-colors text-left disabled:opacity-60">
-            <Trash2 size={20} className="shrink-0 mt-0.5 text-red-500" />
-            <div>
-              <p className="text-sm font-bold text-red-600">繰り返しをすべて削除</p>
-              <p className="text-xs text-red-400/80 mt-0.5 leading-relaxed">この繰り返し設定と、紐づく<br />すべてのタスクを削除します。</p>
-            </div>
-          </motion.button>
-
-          <button onClick={() => setDeleteMode(null)}
-            className="w-full py-3 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">
-            キャンセル
-          </button>
-
-          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
-        </div>
-      </BottomSheet>
-    );
-  }
-
-  // --- 通常削除確認 ---
-  if (deleteMode === 'simple') {
-    return (
-      <BottomSheet onClose={onClose} title="タスクを削除">
-        <div className="space-y-4">
-          <p className="text-sm text-gray-600 text-center py-2">「{title}」を削除しますか？</p>
-          <div className="flex gap-2">
-            <button onClick={() => setDeleteMode(null)} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">戻る</button>
-            <motion.button onClick={handleDeleteSingle} disabled={isPending} whileTap={{ scale: 0.96 }}
-              className="flex-1 bg-red-500 text-white font-bold py-3.5 rounded-2xl text-sm disabled:opacity-60">
-              {isPending ? '削除中...' : '削除する'}
-            </motion.button>
-          </div>
-          {error && <p className="text-xs text-red-500 text-center">{error}</p>}
-        </div>
-      </BottomSheet>
-    );
-  }
-
-  // --- 編集フォーム ---
+  // --- 編集フォーム（削除オプション込み） ---
   return (
     <BottomSheet onClose={onClose} title="タスクを編集">
       <form onSubmit={handleSave} className="space-y-4">
         <input type="text" value={editTitle} onChange={(e) => { setEditTitle(e.target.value); setError(''); }} autoFocus
           className="w-full bg-[#FFFCF6] border border-gray-200/80 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#2EC58A]/40 transition-all" />
         {error && <p className="text-xs text-red-500 bg-red-50 rounded-2xl px-4 py-2.5">{error}</p>}
-        <div className="flex gap-2 pt-1">
-          <button type="button" onClick={() => setDeleteMode(ruleId ? 'choose' : 'simple')}
-            className="py-3.5 px-4 rounded-2xl text-sm font-semibold text-red-400 hover:bg-red-50 transition-colors">削除</button>
-          <button type="button" onClick={onClose} className="flex-1 py-3.5 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100">キャンセル</button>
-          <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.96 }}
-            className="flex-1 bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
-            {isPending ? '保存中...' : '保存する'}
-          </motion.button>
+
+        {/* 削除オプション（インライン・コンパクト） */}
+        {deleteMode === 'choose' && (
+          <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
+            <motion.button type="button" onClick={handleDeleteSingle} disabled={isPending} whileTap={{ scale: 0.97 }}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-orange-600 bg-orange-50 border border-orange-200 hover:bg-orange-100 transition-colors disabled:opacity-60">
+              この1件のみ削除
+            </motion.button>
+            <motion.button type="button" onClick={() => setConfirmDeleteAll(true)} disabled={isPending} whileTap={{ scale: 0.97 }}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-60">
+              すべて削除
+            </motion.button>
+          </motion.div>
+        )}
+
+
+        {/* すべて削除 確認ポップアップ */}
+        <AnimatePresence>
+          {confirmDeleteAll && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              className="fixed inset-0 z-[200] flex items-center justify-center px-6 bg-black/40 backdrop-blur-sm"
+              onClick={(e) => { if (e.target === e.currentTarget) setConfirmDeleteAll(false); }}>
+              <motion.div initial={{ opacity: 0, scale: 0.92, y: 8 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.92 }}
+                className="bg-white rounded-2xl p-6 shadow-2xl w-full max-w-sm">
+                <p className="text-sm font-bold text-gray-800 text-center mb-1">繰り返しをすべて削除しますか？</p>
+                <p className="text-xs text-gray-400 text-center mb-5">この繰り返し設定と紐づくすべてのタスクが削除されます。取り消せません。</p>
+                <div className="flex gap-2">
+                  <button type="button" onClick={() => setConfirmDeleteAll(false)}
+                    className="flex-1 py-3 rounded-2xl text-sm font-semibold text-gray-500 bg-gray-100 hover:bg-gray-200 transition-colors">
+                    やめる
+                  </button>
+                  <motion.button type="button" onClick={handleDeleteAll} disabled={isPending} whileTap={{ scale: 0.96 }}
+                    className="flex-1 py-3 rounded-2xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors disabled:opacity-60">
+                    {isPending ? '削除中...' : '削除する'}
+                  </motion.button>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* 通常タスクは保存+削除 */}
+        {!deleteMode && (
+          <div className="flex gap-2 pt-1">
+            <motion.button type="submit" disabled={isPending} whileTap={{ scale: 0.96 }}
+              className="flex-1 bg-gradient-to-br from-[#2EC58A] to-[#15A06E] text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 disabled:opacity-60">
+              {isPending ? '保存中...' : '保存する'}
+            </motion.button>
+            <motion.button type="button" whileTap={{ scale: 0.96 }}
+              onClick={ruleId ? () => setDeleteMode(prev => prev ? null : 'choose') : handleDeleteSingle}
+              className={`flex-1 py-3.5 rounded-2xl text-sm font-bold transition-all ${
+                deleteMode
+                  ? 'bg-red-500 text-white shadow-md shadow-red-200/50'
+                  : 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100'
+              }`}>
+              削除
+            </motion.button>
         </div>
+        )}
       </form>
     </BottomSheet>
   );
@@ -789,11 +805,14 @@ export default function HomePage() {
   const [editingTask, setEditingTask] = useState<TaskResponse | CalendarTaskItem | null>(null);
   const [appreciatingTaskId, setAppreciatingTaskId] = useState<number | null>(null);
   const [sentTaskIds, setSentTaskIds] = useState<Set<number>>(new Set());
+  const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const completeTask = useCompleteTask();
   const createTask = useCreateTask();
+  const deleteTask = useDeleteTask();
+  const deleteRule = useDeleteRecurrenceRule();
 
   const [calYear, setCalYear] = useState(today.getFullYear());
   const [calMonth, setCalMonth] = useState(today.getMonth() + 1);
@@ -837,6 +856,35 @@ export default function HomePage() {
       }
     } catch { /* mutation handles error */ }
   }, [completeTask, createTask, queryClient]);
+
+  const handleDesktopDeleteSingle = useCallback(async (task: CalendarTaskItem) => {
+    try {
+      if (task.task_id) {
+        await deleteTask.mutateAsync(task.task_id);
+      } else {
+        // 仮想タスク: 実体化してから即削除
+        const created = await createTask.mutateAsync({
+          title: task.title ?? '',
+          category: task.category ?? undefined,
+          recurrence_rule_id: task.recurrence_rule_id ?? undefined,
+          scheduled_date: task.scheduled_date ?? undefined,
+        });
+        if (created?.id) {
+          await deleteTask.mutateAsync(created.id);
+        }
+      }
+      setPendingDeleteKey(null);
+    } catch { }
+  }, [deleteTask, createTask]);
+
+  const handleDesktopDeleteAll = useCallback(async (task: CalendarTaskItem) => {
+    const ruleId = task.recurrence_rule_id;
+    if (!ruleId) return;
+    try {
+      await deleteRule.mutateAsync(ruleId);
+      setPendingDeleteKey(null);
+    } catch { }
+  }, [deleteRule]);
 
   const prevMonth = () => { if (calMonth === 1) { setCalYear(y => y - 1); setCalMonth(12); } else setCalMonth(m => m - 1); };
   const nextMonth = () => { if (calMonth === 12) { setCalYear(y => y + 1); setCalMonth(1); } else setCalMonth(m => m + 1); };
@@ -941,8 +989,7 @@ export default function HomePage() {
               <div className="space-y-2.5">
                 {dayTasks.map((task, i) => {
                   const isDone = task.status === 'done';
-                  const isVirtual = !task.task_id;
-                  const canEdit = !!task.task_id;
+                  const canEdit = true;
                   return (
                     <motion.div key={`${task.recurrence_rule_id ?? 'task'}-${i}`}
                       initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 20 }}
@@ -957,7 +1004,6 @@ export default function HomePage() {
                       <motion.button onClick={() => !isDone && handleComplete(task)} whileTap={!isDone ? { scale: 0.85 } : {}}
                         className={`shrink-0 w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all ${
                           isDone ? 'border-[#2EC58A] bg-gradient-to-br from-[#2EC58A] to-[#15A06E] shadow-md shadow-green-200/40'
-                            : isVirtual ? 'border-gray-200 hover:border-[#2EC58A]/60 hover:bg-[#2EC58A]/5'
                             : 'border-[#2EC58A]/50 hover:border-[#2EC58A] hover:bg-[#2EC58A]/10'
                         }`}>
                         {isDone && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-white text-sm font-bold">✓</motion.span>}
@@ -971,7 +1017,6 @@ export default function HomePage() {
                         <div className="flex items-center gap-1.5 min-w-0">
                           <span className={`flex-1 min-w-0 text-sm font-semibold truncate ${isDone ? 'line-through text-black' : 'text-black'}`}>{task.title}</span>
                           {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-[#AEB8C4]" />}
-                          {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-[#AEB8C4] border border-[#AEB8C4]/40 px-1.5 py-0.5 rounded-full font-medium">予定</span>}
                         </div>
                         {task.category && <span className="text-[10px] text-[#2EC58A] font-medium">{task.category}</span>}
 
@@ -1064,19 +1109,23 @@ export default function HomePage() {
                 </div>
               ) : (
                 <AnimatePresence mode="popLayout">
-                  <div className="space-y-2.5">
+                  <div className="space-y-2">
                     {dayTasks.map((task, i) => {
                       const isDone = task.status === 'done';
-                      const isVirtual = !task.task_id;
-                      const canEdit = !!task.task_id;
+                      const rowKey = `${task.recurrence_rule_id ?? 'task'}-${i}`;
+                      const isDeleting = pendingDeleteKey === rowKey;
+                      const hasRule = !!task.recurrence_rule_id;
+                      const isDeletePending = deleteTask.isPending || deleteRule.isPending;
                       return (
-                        <motion.div key={`${task.recurrence_rule_id ?? 'task'}-${i}`}
+                        <motion.div key={rowKey}
                           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, x: 16 }}
                           transition={{ delay: i * 0.03 }}
-                          className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${
-                            isDone
+                          className={`group flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all ${
+                            isDeleting
+                              ? 'bg-red-50/60 border-red-200/60'
+                              : isDone
                               ? 'bg-[#EFFCF6] border-[#2EC58A]/20'
-                              : 'bg-gray-50/70 border-gray-100 hover:bg-[#EFFCF6]/60'
+                              : 'bg-white border-gray-100 hover:border-[#2EC58A]/30 hover:shadow-[0_2px_12px_rgba(46,197,138,0.08)]'
                           }`}>
 
                           {/* 完了チェック */}
@@ -1090,44 +1139,88 @@ export default function HomePage() {
                           </motion.button>
 
                           {/* タスク情報 */}
-                          <div
-                            className={`flex-1 min-w-0 ${canEdit ? 'cursor-pointer' : 'cursor-default'}`}
-                            onClick={() => canEdit && setEditingTask(task)}
-                          >
+                          <div className="flex-1 min-w-0 cursor-pointer" onClick={() => !isDeleting && setEditingTask(task)}>
                             <div className="flex items-center gap-1.5 min-w-0">
-                              <span className={`text-base font-semibold truncate ${isDone ? 'line-through text-black' : 'text-black'}`}>{task.title}</span>
-                              {task.recurrence_rule_id && <RefreshCw size={11} className="shrink-0 text-[#AEB8C4]" />}
-                              {isVirtual && !isDone && <span className="shrink-0 text-[9px] text-[#AEB8C4] border border-[#AEB8C4]/40 px-1.5 py-0.5 rounded-full">予定</span>}
+                              <span className={`text-sm font-semibold truncate ${isDone ? 'line-through text-gray-400' : 'text-gray-800'}`}>{task.title}</span>
+                              {hasRule && <RefreshCw size={10} className="shrink-0 text-[#AEB8C4]" />}
                             </div>
                             {task.category && <span className="text-[11px] text-[#2EC58A] font-medium">{task.category}</span>}
-
                             {isDone && task.done_by_user_name && (
-                              <div className="flex items-center gap-1 mt-1.5">
-                                <div className="w-4 h-4 rounded-full bg-[#2EC58A]/25 flex items-center justify-center">
-                                  <User size={9} className="text-[#15A06E]" />
+                              <div className="flex items-center gap-1 mt-1">
+                                <div className="w-3.5 h-3.5 rounded-full bg-[#2EC58A]/20 flex items-center justify-center">
+                                  <User size={8} className="text-[#15A06E]" />
                                 </div>
-                                <span className="text-[11px] text-[#586577] font-medium">{task.done_by_user_name}さんが完了</span>
+                                <span className="text-[10px] text-[#586577]">{task.done_by_user_name}さんが完了</span>
                               </div>
                             )}
                           </div>
 
-                          {/* 右: ありがとうボタン */}
-                          {isDone && task.task_id && task.done_by_user_id !== user?.id && (
-                            sentTaskIds.has(task.task_id) ? (
-                              <span className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
-                                <Heart size={10} fill="#FF6F9C" />
-                                ありがとう
-                              </span>
-                            ) : (
-                              <motion.button
-                                onClick={() => setAppreciatingTaskId(task.task_id!)}
-                                whileTap={{ scale: 0.92 }}
-                                className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-white border border-[#FF6F9C]/40 px-2.5 py-1.5 rounded-full hover:bg-[#FF6F9C]/10 transition-all"
+                          {/* 右エリア */}
+                          {isDeleting ? (
+                            /* ── インライン削除確認（繰り返しタスクのみ到達） ── */
+                            <div className="shrink-0 flex items-center gap-2">
+                              <button
+                                onClick={() => handleDesktopDeleteSingle(task)}
+                                disabled={isDeletePending}
+                                className="flex items-center gap-1 text-xs font-semibold text-orange-600 bg-orange-50 border border-orange-200 px-3 py-1.5 rounded-xl hover:bg-orange-100 transition-colors disabled:opacity-40"
                               >
-                                <Heart size={10} />
-                                ありがとう
-                              </motion.button>
-                            )
+                                <Pin size={11} />
+                                この1件のみ
+                              </button>
+                              <button
+                                onClick={() => handleDesktopDeleteAll(task)}
+                                disabled={isDeletePending}
+                                className="flex items-center gap-1 text-xs font-semibold text-red-600 bg-red-50 border border-red-200 px-3 py-1.5 rounded-xl hover:bg-red-100 transition-colors disabled:opacity-40"
+                              >
+                                <Trash2 size={11} />
+                                すべて削除
+                              </button>
+                              <button
+                                onClick={() => setPendingDeleteKey(null)}
+                                className="w-7 h-7 flex items-center justify-center rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors text-sm"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          ) : (
+                            /* ── 通常状態 ── */
+                            <div className="shrink-0 flex items-center gap-2">
+                              {/* ありがとうボタン */}
+                              {isDone && task.task_id && task.done_by_user_id !== user?.id && (
+                                sentTaskIds.has(task.task_id) ? (
+                                  <span className="flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
+                                    <Heart size={10} fill="#FF6F9C" />
+                                    送済み
+                                  </span>
+                                ) : (
+                                  <motion.button
+                                    onClick={() => setAppreciatingTaskId(task.task_id!)}
+                                    whileTap={{ scale: 0.92 }}
+                                    className="flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-white border border-[#FF6F9C]/40 px-2.5 py-1.5 rounded-full hover:bg-[#FF6F9C]/10 transition-all"
+                                  >
+                                    <Heart size={10} />
+                                    ありがとう
+                                  </motion.button>
+                                )
+                              )}
+                              {/* ホバー時アクションボタン */}
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => setEditingTask(task)}
+                                  className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-[#15A06E] hover:bg-[#EFFCF6] transition-all"
+                                  title="編集"
+                                >
+                                  <Pencil size={14} />
+                                </button>
+                                <button
+                                  onClick={() => hasRule ? setPendingDeleteKey(rowKey) : handleDesktopDeleteSingle(task)}
+                                  className="w-8 h-8 flex items-center justify-center rounded-xl text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all"
+                                  title="削除"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                              </div>
+                            </div>
                           )}
                         </motion.div>
                       );
