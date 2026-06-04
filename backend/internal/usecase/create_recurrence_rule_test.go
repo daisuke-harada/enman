@@ -17,7 +17,7 @@ func TestCreateRecurrenceRuleInteractor_Execute(t *testing.T) {
 	ctx := context.Background()
 
 	familyID := uint(1)
-	startDate := time.Date(2026, 5, 19, 0, 0, 0, 0, time.UTC)
+	startDate := time.Date(2026, 5, 19, 0, 0, 0, 0, time.Local)
 
 	t.Run("毎日の繰り返しルールを作成", func(t *testing.T) {
 		mockRuleRepo := repositorymock.NewMockRecurrenceRuleRepository(ctrl)

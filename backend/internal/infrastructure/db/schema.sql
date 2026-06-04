@@ -107,7 +107,7 @@ CREATE TABLE appreciations (
   PRIMARY KEY (id),
   INDEX idx_appreciations_to_user (to_user_id),
   INDEX idx_appreciations_task (task_id),
-  CONSTRAINT fk_appreciations_task FOREIGN KEY (task_id) REFERENCES tasks (id),
+  CONSTRAINT fk_appreciations_task FOREIGN KEY (task_id) REFERENCES tasks (id) ON DELETE CASCADE,
   CONSTRAINT fk_appreciations_from_user FOREIGN KEY (from_user_id) REFERENCES users (id),
   CONSTRAINT fk_appreciations_to_user FOREIGN KEY (to_user_id) REFERENCES users (id)
 );

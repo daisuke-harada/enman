@@ -5,7 +5,7 @@ import { Calendar, Heart, Inbox, Pencil, Pin, RefreshCw, Trash2, User } from 'lu
 import type { CalendarTaskItem, TaskResponse } from '@/api-client/types.gen';
 import { useCalendar, useCreateRecurrenceRule, useDeleteRecurrenceRule } from '@/hooks/useCalendar';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useCompleteTask, useCreateTask, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
+import { useCompleteTask, useCreateTask, useDeleteTask, useUpdateTask, useCancelTask } from '@/hooks/useTasks';
 
 import { AppShell } from '@/components/AppShell';
 import { EnmanMark } from '@/components/EnmanMark';
@@ -332,10 +332,11 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
   const updateTask = useUpdateTask();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
+  const cancelTask = useCancelTask();
   const deleteRule = useDeleteRecurrenceRule();
   const taskId = 'id' in task ? task.id : ('task_id' in task ? task.task_id : undefined);
   const ruleId = task.recurrence_rule_id ?? undefined;
-  const isPending = updateTask.isPending || createTask.isPending || deleteTask.isPending || deleteRule.isPending;
+  const isPending = updateTask.isPending || createTask.isPending || deleteTask.isPending || cancelTask.isPending || deleteRule.isPending;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -356,11 +357,18 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
   };
 
   const handleDeleteSingle = async () => {
+    const isRecurring = !!ruleId;
     try {
       if (taskId) {
-        await deleteTask.mutateAsync(taskId);
+        if (isRecurring) {
+          // 繰り返しタスク: cancelled にして仮想再生成を防ぐ
+          await cancelTask.mutateAsync(taskId);
+        } else {
+          // 普通のタスク: ハード削除
+          await deleteTask.mutateAsync(taskId);
+        }
       } else {
-        // 仮想タスク（未来の繰り返し）: 実体化してから即削除でこの日をスキップ
+        // 仮想タスク（繰り返しのみ到達）: 実体化してから cancelled にする
         const created = await createTask.mutateAsync({
           title: title || editTitle.trim(),
           category: task.category ?? undefined,
@@ -368,7 +376,7 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
           scheduled_date: 'scheduled_date' in task ? task.scheduled_date ?? undefined : undefined,
         });
         if (created?.id) {
-          await deleteTask.mutateAsync(created.id);
+          await cancelTask.mutateAsync(created.id);
         }
       }
       onClose();
@@ -804,7 +812,6 @@ export default function HomePage() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskResponse | CalendarTaskItem | null>(null);
   const [appreciatingTaskId, setAppreciatingTaskId] = useState<number | null>(null);
-  const [sentTaskIds, setSentTaskIds] = useState<Set<number>>(new Set());
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
@@ -812,6 +819,7 @@ export default function HomePage() {
   const completeTask = useCompleteTask();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
+  const cancelTask = useCancelTask();
   const deleteRule = useDeleteRecurrenceRule();
 
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -858,11 +866,18 @@ export default function HomePage() {
   }, [completeTask, createTask, queryClient]);
 
   const handleDesktopDeleteSingle = useCallback(async (task: CalendarTaskItem) => {
+    const isRecurring = !!task.recurrence_rule_id;
     try {
       if (task.task_id) {
-        await deleteTask.mutateAsync(task.task_id);
+        if (isRecurring) {
+          // 繰り返しタスク: cancelled にして仮想再生成を防ぐ
+          await cancelTask.mutateAsync(task.task_id);
+        } else {
+          // 普通のタスク: ハード削除
+          await deleteTask.mutateAsync(task.task_id);
+        }
       } else {
-        // 仮想タスク: 実体化してから即削除
+        // 仮想タスク（繰り返しのみ到達）: 実体化してから cancelled にする
         const created = await createTask.mutateAsync({
           title: task.title ?? '',
           category: task.category ?? undefined,
@@ -870,12 +885,12 @@ export default function HomePage() {
           scheduled_date: task.scheduled_date ?? undefined,
         });
         if (created?.id) {
-          await deleteTask.mutateAsync(created.id);
+          await cancelTask.mutateAsync(created.id);
         }
       }
       setPendingDeleteKey(null);
     } catch { }
-  }, [deleteTask, createTask]);
+  }, [cancelTask, deleteTask, createTask]);
 
   const handleDesktopDeleteAll = useCallback(async (task: CalendarTaskItem) => {
     const ruleId = task.recurrence_rule_id;
@@ -1033,7 +1048,7 @@ export default function HomePage() {
 
                       {/* 右: ありがとうボタン */}
                       {isDone && task.task_id && task.done_by_user_id !== user?.id && (
-                        sentTaskIds.has(task.task_id) ? (
+                        task.appreciated_by_me ? (
                           <span className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
                             <Heart size={10} fill="#FF6F9C" />
                             ありがとう
@@ -1187,10 +1202,10 @@ export default function HomePage() {
                             <div className="shrink-0 flex items-center gap-2">
                               {/* ありがとうボタン */}
                               {isDone && task.task_id && task.done_by_user_id !== user?.id && (
-                                sentTaskIds.has(task.task_id) ? (
+                                task.appreciated_by_me ? (
                                   <span className="flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
                                     <Heart size={10} fill="#FF6F9C" />
-                                    送済み
+                                    送信済み
                                   </span>
                                 ) : (
                                   <motion.button
@@ -1254,7 +1269,7 @@ export default function HomePage() {
           <AppreciationSheet
             taskId={appreciatingTaskId}
             onClose={() => setAppreciatingTaskId(null)}
-            onSent={() => setSentTaskIds(prev => new Set(prev).add(appreciatingTaskId!))}
+            onSent={() => setAppreciatingTaskId(null)}
           />
         )}
         {showCalendar && (

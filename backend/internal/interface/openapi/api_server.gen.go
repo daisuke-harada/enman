@@ -82,6 +82,9 @@ type ServerInterface interface {
 	// ありがとうスタンプ送信
 	// (POST /tasks/{taskId}/appreciations)
 	PostTasksAppreciation(ctx echo.Context, taskId int64) error
+	// タスクをキャンセル（繰り返しタスクの1件スキップ）
+	// (PATCH /tasks/{taskId}/cancel)
+	PatchTasksCancel(ctx echo.Context, taskId int64) error
 	// タスク完了報告
 	// (PATCH /tasks/{taskId}/done)
 	PatchTasksDone(ctx echo.Context, taskId int64) error
@@ -403,6 +406,24 @@ func (w *ServerInterfaceWrapper) PostTasksAppreciation(ctx echo.Context) error {
 	return err
 }
 
+// PatchTasksCancel converts echo context to params.
+func (w *ServerInterfaceWrapper) PatchTasksCancel(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "taskId" -------------
+	var taskId int64
+
+	err = runtime.BindStyledParameterWithOptions("simple", "taskId", ctx.Param("taskId"), &taskId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "integer", Format: "int64"})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter taskId: %s", err))
+	}
+
+	ctx.Set(string(BearerAuthScopes), []string{})
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.PatchTasksCancel(ctx, taskId)
+	return err
+}
+
 // PatchTasksDone converts echo context to params.
 func (w *ServerInterfaceWrapper) PatchTasksDone(ctx echo.Context) error {
 	var err error
@@ -513,6 +534,7 @@ func RegisterHandlersWithOptions(router EchoRouter, si ServerInterface, options 
 	router.DELETE(options.BaseURL+"/tasks/:taskId", wrapper.DeleteTask, options.OperationMiddlewares["deleteTask"]...)
 	router.PATCH(options.BaseURL+"/tasks/:taskId", wrapper.PatchTask, options.OperationMiddlewares["patchTask"]...)
 	router.POST(options.BaseURL+"/tasks/:taskId/appreciations", wrapper.PostTasksAppreciation, options.OperationMiddlewares["postTasksAppreciation"]...)
+	router.PATCH(options.BaseURL+"/tasks/:taskId/cancel", wrapper.PatchTasksCancel, options.OperationMiddlewares["patchTasksCancel"]...)
 	router.PATCH(options.BaseURL+"/tasks/:taskId/done", wrapper.PatchTasksDone, options.OperationMiddlewares["patchTasksDone"]...)
 	router.GET(options.BaseURL+"/users/me", wrapper.GetUsersMe, options.OperationMiddlewares["getUsersMe"]...)
 	router.PATCH(options.BaseURL+"/users/me", wrapper.PatchUsersMe, options.OperationMiddlewares["patchUsersMe"]...)

@@ -58,6 +58,12 @@ func daysAgo(days, hour, minute int) time.Time {
 	return base.AddDate(0, 0, -days)
 }
 
+// n 日前の日付（00:00:00）を返す
+func dateOnly(days int) time.Time {
+	now := time.Now()
+	return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).AddDate(0, 0, -days)
+}
+
 // ─────────────────────────────────────────────
 // main
 // ─────────────────────────────────────────────
@@ -150,91 +156,107 @@ func main() {
 
 	// ── 4. タスク ──────────────────────────────
 	type taskSeed struct {
-		Title     string
-		Category  string
-		Status    model.TaskStatus
-		CreatedBy *model.User
-		DoneBy    *model.User
-		DoneAt    *time.Time
-		CreatedAt time.Time
+		Title         string
+		Category      string
+		Status        model.TaskStatus
+		CreatedBy     *model.User
+		DoneBy        *model.User
+		DoneAt        *time.Time
+		CreatedAt     time.Time
+		ScheduledDate time.Time
 	}
 	taskSeeds := []taskSeed{
-		// ── 完了タスク（12件）──
+		// ── 完了タスク（12件）── scheduled_date = 完了日
 		{
 			Title: "皿洗い", Category: "キッチン",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: mama,
 			DoneAt: ptr(daysAgo(5, 20, 30)), CreatedAt: daysAgo(5, 19, 0),
+			ScheduledDate: dateOnly(5),
 		},
 		{
 			Title: "ゴミ出し", Category: "ゴミ",
 			Status: model.TaskStatusDone, CreatedBy: papa, DoneBy: papa,
 			DoneAt: ptr(daysAgo(4, 7, 15)), CreatedAt: daysAgo(5, 22, 0),
+			ScheduledDate: dateOnly(4),
 		},
 		{
 			Title: "掃除機がけ", Category: "掃除",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: haruto,
 			DoneAt: ptr(daysAgo(4, 15, 0)), CreatedAt: daysAgo(4, 10, 0),
+			ScheduledDate: dateOnly(4),
 		},
 		{
 			Title: "洗濯", Category: "洗濯",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: mama,
 			DoneAt: ptr(daysAgo(3, 9, 0)), CreatedAt: daysAgo(3, 8, 0),
+			ScheduledDate: dateOnly(3),
 		},
 		{
 			Title: "洗濯物の干し", Category: "洗濯",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: sakura,
 			DoneAt: ptr(daysAgo(3, 11, 30)), CreatedAt: daysAgo(3, 9, 30),
+			ScheduledDate: dateOnly(3),
 		},
 		{
 			Title: "夕食の料理", Category: "キッチン",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: mama,
 			DoneAt: ptr(daysAgo(2, 18, 30)), CreatedAt: daysAgo(2, 17, 0),
+			ScheduledDate: dateOnly(2),
 		},
 		{
 			Title: "トイレ掃除", Category: "掃除",
 			Status: model.TaskStatusDone, CreatedBy: papa, DoneBy: papa,
 			DoneAt: ptr(daysAgo(2, 10, 0)), CreatedAt: daysAgo(2, 9, 0),
+			ScheduledDate: dateOnly(2),
 		},
 		{
 			Title: "加湿器の給水", Category: "その他",
 			Status: model.TaskStatusDone, CreatedBy: papa, DoneBy: papa,
 			DoneAt: ptr(daysAgo(2, 8, 0)), CreatedAt: daysAgo(2, 7, 30),
+			ScheduledDate: dateOnly(2),
 		},
 		{
 			Title: "お風呂掃除", Category: "掃除",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: mama,
 			DoneAt: ptr(daysAgo(1, 19, 0)), CreatedAt: daysAgo(1, 18, 0),
+			ScheduledDate: dateOnly(1),
 		},
 		{
 			Title: "食材の買い出し", Category: "キッチン",
 			Status: model.TaskStatusDone, CreatedBy: papa, DoneBy: papa,
 			DoneAt: ptr(daysAgo(1, 11, 0)), CreatedAt: daysAgo(2, 20, 0),
+			ScheduledDate: dateOnly(1),
 		},
 		{
 			Title: "子どものお風呂", Category: "育児",
 			Status: model.TaskStatusDone, CreatedBy: mama, DoneBy: mama,
 			DoneAt: ptr(daysAgo(1, 20, 30)), CreatedAt: daysAgo(1, 19, 30),
+			ScheduledDate: dateOnly(1),
 		},
 		{
 			Title: "ゴミ袋のセット", Category: "ゴミ",
 			Status: model.TaskStatusDone, CreatedBy: haruto, DoneBy: haruto,
 			DoneAt: ptr(daysAgo(0, 8, 0)), CreatedAt: daysAgo(1, 22, 0),
+			ScheduledDate: dateOnly(0),
 		},
-		// ── 未完了タスク（3件）──
+		// ── 未完了タスク（3件）── scheduled_date = 今日
 		{
 			Title: "アイロンがけ", Category: "洗濯",
 			Status: model.TaskStatusPending, CreatedBy: mama,
 			CreatedAt: daysAgo(1, 21, 0),
+			ScheduledDate: dateOnly(0),
 		},
 		{
 			Title: "郵便物の確認", Category: "その他",
 			Status: model.TaskStatusPending, CreatedBy: papa,
 			CreatedAt: daysAgo(0, 9, 0),
+			ScheduledDate: dateOnly(0),
 		},
 		{
 			Title: "床の拭き掃除", Category: "掃除",
 			Status: model.TaskStatusPending, CreatedBy: papa,
 			CreatedAt: daysAgo(0, 9, 30),
+			ScheduledDate: dateOnly(0),
 		},
 	}
 	tasks := make([]*model.Task, 0, len(taskSeeds))
@@ -244,12 +266,13 @@ func main() {
 			family.ID, s.Title, s.CreatedBy.ID).First(&task)
 		if result.Error == gorm.ErrRecordNotFound {
 			task = model.Task{
-				FamilyID:  family.ID,
-				CreatedBy: s.CreatedBy.ID,
-				Title:     s.Title,
-				Category:  &s.Category,
-				Status:    s.Status,
-				CreatedAt: s.CreatedAt,
+				FamilyID:      family.ID,
+				CreatedBy:     s.CreatedBy.ID,
+				Title:         s.Title,
+				Category:      &s.Category,
+				Status:        s.Status,
+				CreatedAt:     s.CreatedAt,
+				ScheduledDate: &s.ScheduledDate,
 			}
 			if s.DoneBy != nil {
 				task.DoneBy = &s.DoneBy.ID

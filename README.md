@@ -2,7 +2,7 @@
 
 > 家族の感謝を可視化する、家事管理・ありがとう共有アプリ
 
-家事の「名もなき労働」を記録し、家族が互いにスタンプで感謝を伝え合うことで、家庭内のポジティブな循環を作り出すフルスタックアプリです。  
+家事の「名もなき労働」を記録し、家族が互いにスタンプで感謝を伝え合うことで、家庭内のポジティブな循環を作り出すフルスタックアプリです。
 **Web ブラウザ** と **iOS アプリ（Capacitor）** の両方で動作します。
 
 ---
@@ -27,18 +27,18 @@
 
 ## 機能一覧
 
-### フェーズ1 — ユーザー・家族管理（Foundation）
+### フェーズ1 — ユーザー・家族管理
 
 | 機能 | 説明 |
 |---|---|
-| ユーザー登録 | 名前・役割（パパ/ママ/長男/長女/その他）・メール・パスワードで登録 |
+| ユーザー登録 | 名前・役割（自由テキスト）・メール・パスワードで登録 |
 | ログイン / ログアウト | JWT 認証（アクセストークン + リフレッシュトークン） |
 | 家族グループ作成 | グループ名を入力してユニークな招待コードを発行 |
 | 家族グループ参加 | 招待コード（12文字）を入力して既存グループに参加 |
 | プロフィール編集 | 名前・役割を後から変更可能 |
 | 円満ポイント表示 | プロフィール画面でポイント残高を表示 |
 
-### フェーズ2 — 家事（タスク）管理（Core）
+### フェーズ2 — 家事（タスク）管理
 
 | 機能 | 説明 |
 |---|---|
@@ -47,11 +47,11 @@
 | タスク一覧表示 | 「これからやること」「今日終わったこと」タブで切り替え |
 | 完了報告 | ワンタップで完了。コンフェッティアニメーション付き |
 | タスク編集・削除 | 作成済みタスクのタイトル・カテゴリーを変更、または削除 |
-| 繰り返しルール | 毎日・毎週など繰り返しタスクのルールを設定・管理 |
-| カレンダー表示 | 日付ごとのタスクをカレンダービューで確認 |
+| 繰り返しルール | 毎日・毎週・毎月など繰り返しタスクのルールを設定・管理 |
+| カレンダー表示 | 日付ごとのタスクをカレンダービューで確認（繰り返し展開対応） |
 | バリデーション | タスク名未入力時のエラーメッセージ表示 |
 
-### フェーズ3 — 感謝（Appreciation）システム（USP）
+### フェーズ3 — 感謝（Appreciation）システム
 
 | 機能 | 説明 |
 |---|---|
@@ -59,7 +59,7 @@
 | 円満ポイント加算 | タスク完了で +1pt、スタンプを送る・受け取るそれぞれで +1pt 付与 |
 | 通知センター | 受け取った感謝スタンプの履歴一覧を確認 |
 
-### フェーズ4 — 可視化・ダッシュボード（Engagement）
+### フェーズ4 — 可視化・ダッシュボード
 
 | 機能 | 説明 |
 |---|---|
@@ -72,10 +72,11 @@
 
 | 機能 | 説明 |
 |---|---|
-| レスポンシブデザイン | モバイル（BottomNav）/ デスクトップ（Sidebar）で最適なレイアウト |
+| レスポンシブデザイン | モバイル（BottomNav 3タブ）/ デスクトップ（Sidebar 4リンク）で最適なレイアウト |
 | Warm & Organic デザイン | グラスモーフィズム・グラデーション・Framer Motion アニメーション |
 | 未ログイン保護 | 認証されていない状態でのアクセスはログイン画面へリダイレクト |
 | 家族未設定保護 | 家族グループ未参加のユーザーはセットアップ画面へリダイレクト |
+| iOS Safe Area 対応 | ノッチ・ホームインジケーターを考慮したレイアウト |
 
 ---
 
@@ -93,6 +94,8 @@
 | oapi-codegen | — | OpenAPI サーバーコード生成 |
 | go.uber.org/dig | 1.18.1 | 依存注入 |
 | go.uber.org/mock | 0.6.0 | モック生成（テスト用） |
+| samber/lo | 1.53.0 | ユーティリティ（map/filter） |
+| kelseyhightower/envconfig | 1.4.0 | 環境変数パース |
 | golangci-lint | — | 静的解析 |
 | mysqldef | — | DB スキーマ管理 |
 
@@ -108,6 +111,7 @@
 | Axios | 1.7.0 | HTTP クライアント |
 | Framer Motion | 12.38.0 | アニメーション |
 | Recharts | 3.8.1 | グラフ |
+| Lucide React | 1.17.0 | アイコン |
 | Capacitor | 8.3.4 | iOS アプリ化 |
 | @hey-api/openapi-ts | 0.95.0 | TypeScript 型生成 |
 | Playwright | 1.60.0 | E2E テスト |
@@ -172,10 +176,10 @@ enman/
 │   ├── cmd/api/main.go           # エントリーポイント
 │   ├── internal/
 │   │   ├── domain/               # モデル・リポジトリ IF・サービス
-│   │   ├── usecase/              # ビジネスロジック（TDD）
+│   │   ├── usecase/              # ビジネスロジック（TDD）25+
 │   │   ├── infrastructure/       # DB 実装（GORM）
 │   │   ├── interface/
-│   │   │   ├── handler/          # HTTP ハンドラー（20+）
+│   │   │   ├── handler/          # HTTP ハンドラー（26+）
 │   │   │   ├── middleware/       # CORS・認証・ロギング
 │   │   │   └── openapi/          # 自動生成コード（編集禁止）
 │   │   ├── config/               # 環境変数
@@ -188,9 +192,9 @@ enman/
 ├── frontend/                     # Next.js フロントエンド
 │   ├── src/
 │   │   ├── app/                  # ページ（App Router）
-│   │   │   ├── page.tsx          # ホーム（タスク一覧）
+│   │   │   ├── page.tsx          # ホーム（タスク一覧 + カレンダー）
 │   │   │   ├── login/            # ログイン・新規登録
-│   │   │   ├── dashboard/        # ダッシュボード
+│   │   │   ├── dashboard/        # ダッシュボード（統計・ご褒美）
 │   │   │   ├── notifications/    # 通知センター
 │   │   │   ├── profile/          # プロフィール
 │   │   │   ├── tasks/new/        # タスク作成
@@ -198,12 +202,13 @@ enman/
 │   │   ├── components/
 │   │   │   ├── AppShell.tsx      # レイアウト基盤
 │   │   │   ├── AuthGuard.tsx     # 認証ガード
-│   │   │   ├── BottomNav.tsx     # モバイルナビ
-│   │   │   └── Sidebar.tsx       # サイドバー
-│   │   ├── hooks/                # API ラッパーフック
+│   │   │   ├── BottomNav.tsx     # モバイルナビ（3タブ）
+│   │   │   ├── Sidebar.tsx       # デスクトップナビ（4リンク）
+│   │   │   └── EnmanMark.tsx     # ロゴマーク
+│   │   ├── hooks/                # API ラッパーフック（8ファイル）
 │   │   ├── api-client/           # 自動生成クライアント（編集禁止）
 │   │   └── lib/                  # axios・QueryClient・auth
-│   ├── e2e/                      # Playwright テスト（55ケース）
+│   ├── e2e/                      # Playwright テスト（8ファイル）
 │   ├── playwright.config.ts
 │   ├── next.config.ts
 │   └── capacitor.config.ts
@@ -349,7 +354,7 @@ make db-reset
 |---|---|
 | `make backend-test` | Go ユニットテスト実行 |
 | `make backend-lint` | golangci-lint 実行 |
-| `make e2e` | Playwright E2E テスト実行（全 60 ケース） |
+| `make e2e` | Playwright E2E テスト実行 |
 | `make e2e-file FILE=e2e/01-auth.spec.ts` | 特定ファイルのみ E2E 実行 |
 | `make e2e-report` | テスト結果レポートをブラウザで確認 |
 | `make e2e-ui` | インタラクティブ UI モードで E2E 実行（デバッグ用） |
@@ -411,7 +416,7 @@ Swagger UI: `http://localhost:8080`
 | POST | `/recurrence-rules` | 繰り返しルール作成 | 要 |
 | PATCH | `/recurrence-rules/{ruleId}` | 繰り返しルール編集 | 要 |
 | DELETE | `/recurrence-rules/{ruleId}` | 繰り返しルール削除 | 要 |
-| GET | `/calendar` | カレンダー取得（`?year=&month=`） | 要 |
+| GET | `/calendar` | カレンダー取得（`?year=&month=`、繰り返し展開済み） | 要 |
 
 ### 感謝スタンプ・通知
 
@@ -439,32 +444,38 @@ Swagger UI: `http://localhost:8080`
 
 ```
 families
-  id            BIGINT PK
+  id            BIGINT PK AUTO_INCREMENT
   name          VARCHAR
   invite_code   VARCHAR UNIQUE
+  created_at    DATETIME
+  updated_at    DATETIME
 
 users
-  id            BIGINT PK
-  family_id     BIGINT FK(families)
+  id            BIGINT PK AUTO_INCREMENT
+  family_id     BIGINT FK(families) NULL
   name          VARCHAR
-  role          VARCHAR
+  role          VARCHAR        -- 自由テキスト（パパ / ママ / など）
+  icon_url      VARCHAR NULL
   email         VARCHAR UNIQUE
   password_digest VARCHAR
   enman_point   INT DEFAULT 0
+  created_at    DATETIME
+  updated_at    DATETIME
 
 refresh_tokens
-  id            BIGINT PK
+  id            BIGINT PK AUTO_INCREMENT
   user_id       BIGINT FK(users)
   token_hash    VARCHAR UNIQUE
   expired_at    DATETIME
+  created_at    DATETIME
 
 task_templates
-  id            BIGINT PK
+  id            BIGINT PK AUTO_INCREMENT
   name          VARCHAR
   category      VARCHAR
 
 tasks
-  id            BIGINT PK
+  id            BIGINT PK AUTO_INCREMENT
   family_id     BIGINT FK(families)
   created_by    BIGINT FK(users)
   done_by       BIGINT FK(users) NULL
@@ -472,27 +483,55 @@ tasks
   category      VARCHAR
   status        ENUM('pending','done')
   done_at       DATETIME NULL
+  recurrence_rule_id BIGINT FK(recurrence_rules) NULL
+  scheduled_date DATE NULL
+  created_at    DATETIME
+  updated_at    DATETIME
+
+recurrence_rules
+  id            BIGINT PK AUTO_INCREMENT
+  family_id     BIGINT FK(families)
+  created_by    BIGINT FK(users)
+  title         VARCHAR
+  category      VARCHAR
+  frequency     ENUM('daily','weekly','monthly')
+  day_of_week   INT NULL   -- 0=日〜6=土（weekly 用）
+  day_of_month  INT NULL   -- 1〜31（monthly 用）
+  week_of_month INT NULL   -- 1〜5（monthly 用）
+  start_date    DATE
+  end_date      DATE NULL
+  created_at    DATETIME
+  updated_at    DATETIME
 
 family_goals
-  id            BIGINT PK
+  id            BIGINT PK AUTO_INCREMENT
   family_id     BIGINT FK(families)
   title         VARCHAR
   target_points INT
+  created_at    DATETIME
+  updated_at    DATETIME
 
 appreciations
-  id            BIGINT PK
+  id            BIGINT PK AUTO_INCREMENT
   task_id       BIGINT FK(tasks)
   from_user_id  BIGINT FK(users)
   to_user_id    BIGINT FK(users)
   stamp_type    VARCHAR  -- great / thanks / cute / love / star
   message       TEXT NULL
+  created_at    DATETIME
 ```
+
+**インデックス:**
+- `tasks`: (family_id, status), (family_id, scheduled_date)
+- `family_goals`: (family_id)
+- `recurrence_rules`: (family_id)
+- `appreciations`: (to_user_id), (task_id)
 
 ---
 
 ## E2Eテスト
 
-Playwright を使用した E2E テストが 8 シナリオ・**60 テストケース**実装済みで、全て PASS しています。
+Playwright を使用した E2E テストが 8 シナリオ実装済みです。
 
 ```bash
 # バックエンドを起動してから実行
@@ -502,16 +541,16 @@ make e2e
 
 Playwright は自動的に port 3001 でフロントエンドを起動します。
 
-| ファイル | テスト対象 | ケース数 |
-|---|---|---|
-| `01-auth.spec.ts` | ログイン・登録・ログアウト・未認証リダイレクト | 7 |
-| `02-tasks.spec.ts` | タスク作成・完了・編集・削除・テンプレート・バリデーション | 12 |
-| `03-notifications.spec.ts` | 通知一覧・スタンプ絵文字・ナビゲーション | 4 |
-| `04-dashboard.spec.ts` | グラフ・タイムライン・目標追加・レイアウト | 8 |
-| `05-profile.spec.ts` | プロフィール表示・編集・ポイント・招待コード | 10 |
-| `06-navigation.spec.ts` | BottomNav・Sidebar・全ページ遷移 | 11 |
-| `07-family-setup.spec.ts` | グループ作成・参加・招待コード検証 | 4 |
-| `08-appreciation.spec.ts` | ママ→パパ・パパ→ママ スタンプ送信 | 4 |
+| ファイル | テスト対象 |
+|---|---|
+| `01-auth.spec.ts` | ログイン・登録・ログアウト・未認証リダイレクト |
+| `02-tasks.spec.ts` | タスク作成・完了・編集・削除・テンプレート・バリデーション |
+| `03-notifications.spec.ts` | 通知一覧・スタンプ絵文字・ナビゲーション |
+| `04-dashboard.spec.ts` | グラフ・タイムライン・目標追加・レイアウト |
+| `05-profile.spec.ts` | プロフィール表示・編集・ポイント・招待コード |
+| `06-navigation.spec.ts` | BottomNav・Sidebar・全ページ遷移 |
+| `07-family-setup.spec.ts` | グループ作成・参加・招待コード検証 |
+| `08-appreciation.spec.ts` | ママ→パパ・パパ→ママ スタンプ送信 |
 
 ---
 
@@ -566,8 +605,8 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:1099
 | ゴミ | ゴミ出し・ゴミ袋セット |
 | 掃除 | 掃除機がけ・トイレ掃除・お風呂掃除・床拭き掃除 |
 | 洗濯 | 洗濯・洗濯物の干し・洗濯物の取り込み・アイロンがけ |
-| 育児 | お風呂・寝かしつけ |
-| その他 | 保育園の準備・電球の交換・郵便物の確認 |
+| 育児 | お風呂・寝かしつけ・学校準備 |
+| その他 | 電球の交換・郵便物の確認 |
 
 ### ご褒美目標
 

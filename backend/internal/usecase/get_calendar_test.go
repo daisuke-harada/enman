@@ -24,7 +24,7 @@ func TestGetCalendarInteractor_Execute(t *testing.T) {
 		mockRuleRepo := repositorymock.NewMockRecurrenceRuleRepository(ctrl)
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 
-		start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
+		start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.Local)
 		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(&model.User{ID: 10, FamilyID: &familyID, Name: "ユミ"}, nil)
 		mockUserRepo.EXPECT().FindByFamilyID(ctx, familyID).Return([]*model.User{
 			{ID: 10, FamilyID: &familyID, Name: "ユミ"},
@@ -67,7 +67,7 @@ func TestGetCalendarInteractor_Execute(t *testing.T) {
 		mockRuleRepo := repositorymock.NewMockRecurrenceRuleRepository(ctrl)
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 
-		start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC)
+		start := time.Date(2026, 5, 1, 0, 0, 0, 0, time.Local)
 		dayOfWeek := int8(1) // 月曜
 		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(&model.User{ID: 10, FamilyID: &familyID, Name: "ユミ"}, nil)
 		mockUserRepo.EXPECT().FindByFamilyID(ctx, familyID).Return([]*model.User{
@@ -113,7 +113,7 @@ func TestGetCalendarInteractor_Execute(t *testing.T) {
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 
 		ruleID := uint(1)
-		scheduledDate := time.Date(2026, 5, 4, 0, 0, 0, 0, time.UTC)
+		scheduledDate := time.Date(2026, 5, 4, 0, 0, 0, 0, time.Local)
 		dayOfWeek := int8(1) // 月曜
 
 		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(&model.User{ID: 10, FamilyID: &familyID, Name: "ユミ"}, nil)
@@ -128,7 +128,7 @@ func TestGetCalendarInteractor_Execute(t *testing.T) {
 				Title:     "床掃除",
 				Frequency: model.RecurrenceFrequencyWeekly,
 				DayOfWeek: &dayOfWeek,
-				StartDate: time.Date(2026, 5, 1, 0, 0, 0, 0, time.UTC),
+				StartDate: time.Date(2026, 5, 1, 0, 0, 0, 0, time.Local),
 			},
 		}, nil)
 		taskID := uint(99)
@@ -156,7 +156,7 @@ func TestGetCalendarInteractor_Execute(t *testing.T) {
 		}
 
 		// 5/4(月)のタスクは done で task_id が 99
-		may4 := time.Date(2026, 5, 4, 0, 0, 0, 0, time.UTC)
+		may4 := time.Date(2026, 5, 4, 0, 0, 0, 0, time.Local)
 		for _, day := range out.Days {
 			if day.Date.Equal(may4) {
 				if len(day.Tasks) != 1 {
@@ -179,7 +179,7 @@ func TestGetCalendarInteractor_Execute(t *testing.T) {
 		mockTaskRepo := repositorymock.NewMockTaskRepository(ctrl)
 
 		// start_date が月の途中（5/15）
-		start := time.Date(2026, 5, 15, 0, 0, 0, 0, time.UTC)
+		start := time.Date(2026, 5, 15, 0, 0, 0, 0, time.Local)
 		mockUserRepo.EXPECT().FindByID(ctx, uint(10)).Return(&model.User{ID: 10, FamilyID: &familyID, Name: "ユミ"}, nil)
 		mockUserRepo.EXPECT().FindByFamilyID(ctx, familyID).Return([]*model.User{
 			{ID: 10, FamilyID: &familyID, Name: "ユミ"},

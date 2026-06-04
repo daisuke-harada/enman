@@ -357,6 +357,36 @@ paths:
       summary: タスク完了報告
       tags:
       - tasks
+  /tasks/{taskId}/cancel:
+    patch:
+      operationId: patchTasksCancel
+      parameters:
+      - explode: false
+        in: path
+        name: taskId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+          description: キャンセル成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスクをキャンセル（繰り返しタスクの1件スキップ）
+      tags:
+      - tasks
   /task-templates:
     get:
       operationId: getTaskTemplates
@@ -1002,6 +1032,7 @@ components:
           enum:
           - pending
           - done
+          - cancelled
           type: string
         done_at:
           format: date-time
@@ -1283,6 +1314,7 @@ components:
           scheduled_date: 2000-01-23
           done_by_user_id: 5
           done_by_user_name: done_by_user_name
+          appreciated_by_me: true
         - task_id: 0
           recurrence_rule_id: 6
           title: title
@@ -1293,6 +1325,7 @@ components:
           scheduled_date: 2000-01-23
           done_by_user_id: 5
           done_by_user_name: done_by_user_name
+          appreciated_by_me: true
       properties:
         date:
           format: date
@@ -1314,6 +1347,7 @@ components:
         scheduled_date: 2000-01-23
         done_by_user_id: 5
         done_by_user_name: done_by_user_name
+        appreciated_by_me: true
       properties:
         task_id:
           description: 実体化済みタスクの ID（まだ完了・作成されていない仮想インスタンスは null）
@@ -1333,6 +1367,7 @@ components:
           enum:
           - pending
           - done
+          - cancelled
           type: string
         user_id:
           format: int64
@@ -1351,6 +1386,9 @@ components:
           description: 完了者の名前（未完了は null）
           nullable: true
           type: string
+        appreciated_by_me:
+          description: ログインユーザーが感謝スタンプを送信済みかどうか
+          type: boolean
       type: object
     getHealth_200_response:
       example:

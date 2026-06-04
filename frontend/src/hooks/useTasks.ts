@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getTasks, postTasks, patchTask, deleteTask, patchTasksDone, getTaskTemplates } from '@/api-client';
+import { getTasks, postTasks, patchTask, deleteTask, patchTasksDone, patchTasksCancel, getTaskTemplates } from '@/api-client';
 import type { GetTasksData } from '@/api-client/types.gen';
 
 export const TASKS_KEY = (status?: string) => ['tasks', status ?? 'all'];
@@ -84,6 +84,19 @@ export function useCompleteTask() {
       queryClient.invalidateQueries({ queryKey: TASKS_KEY() });
       queryClient.invalidateQueries({ queryKey: TASKS_KEY('pending') });
       queryClient.invalidateQueries({ queryKey: TASKS_KEY('today_done') });
+      queryClient.invalidateQueries({ queryKey: ['calendar'] });
+    },
+  });
+}
+
+export function useCancelTask() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (taskId: number) => {
+      const { data } = await patchTasksCancel({ path: { taskId } });
+      return data;
+    },
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['calendar'] });
     },
   });

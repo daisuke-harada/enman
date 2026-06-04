@@ -47,6 +47,7 @@ func ProvideUsecases(ct *Container) {
 	ct.MustProvide(usecase.NewUpdateTaskInteractor, dig.As(new(usecase.UpdateTaskInputPort)))
 	ct.MustProvide(usecase.NewDeleteTaskInteractor, dig.As(new(usecase.DeleteTaskInputPort)))
 	ct.MustProvide(usecase.NewCompleteTaskInteractor, dig.As(new(usecase.CompleteTaskInputPort)))
+	ct.MustProvide(usecase.NewCancelTaskInteractor, dig.As(new(usecase.CancelTaskInputPort)))
 	ct.MustProvide(usecase.NewListTasksInteractor, dig.As(new(usecase.ListTasksInputPort)))
 	ct.MustProvide(usecase.NewListTaskTemplatesInteractor, dig.As(new(usecase.ListTaskTemplatesInputPort)))
 	ct.MustProvide(usecase.NewSendAppreciationInteractor, dig.As(new(usecase.SendAppreciationInputPort)))

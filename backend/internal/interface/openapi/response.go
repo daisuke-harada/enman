@@ -211,6 +211,7 @@ func NewCalendarDayItemResponse(day usecase.CalendarDay) CalendarDayItem {
 			item.DoneByUserId = &did
 			item.DoneByUserName = &t.DoneByUserName
 		}
+		item.AppreciatedByMe = &t.AppreciatedByMe
 		tasks = append(tasks, item)
 	}
 	return CalendarDayItem{

@@ -5,8 +5,9 @@ import "time"
 type TaskStatus string
 
 const (
-	TaskStatusPending TaskStatus = "pending"
-	TaskStatusDone    TaskStatus = "done"
+	TaskStatusPending   TaskStatus = "pending"
+	TaskStatusDone      TaskStatus = "done"
+	TaskStatusCancelled TaskStatus = "cancelled"
 )
 
 type Task struct {
