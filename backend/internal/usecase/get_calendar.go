@@ -30,6 +30,7 @@ type CalendarTask struct {
 	ScheduledDate    time.Time
 	DoneByUserID     *uint
 	DoneByUserName   string
+	AppreciatedByMe  bool
 }
 
 type CalendarDay struct {
@@ -133,6 +134,7 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 					UserID:           actual.CreatedBy,
 					UserName:         memberMap[actual.CreatedBy],
 					ScheduledDate:    date,
+					AppreciatedByMe:  hasAppreciation(actual, familyID, input.CurrentUserID),
 				}
 				if actual.DoneBy != nil {
 					doneByIDCopy := *actual.DoneBy
@@ -169,13 +171,14 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 		if idx, ok := dayIndex[dateStr]; ok {
 			taskIDCopy := t.ID
 			ct := CalendarTask{
-				TaskID:        &taskIDCopy,
-				Title:         t.Title,
-				Category:      t.Category,
-				Status:        string(t.Status),
-				UserID:        t.CreatedBy,
-				UserName:      memberMap[t.CreatedBy],
-				ScheduledDate: *t.ScheduledDate,
+				TaskID:          &taskIDCopy,
+				Title:           t.Title,
+				Category:        t.Category,
+				Status:          string(t.Status),
+				UserID:          t.CreatedBy,
+				UserName:        memberMap[t.CreatedBy],
+				ScheduledDate:   *t.ScheduledDate,
+				AppreciatedByMe: hasAppreciation(t, familyID, input.CurrentUserID),
 			}
 			if t.DoneBy != nil {
 				doneByIDCopy := *t.DoneBy
@@ -230,6 +233,16 @@ func ruleMatchesDate(rule *model.RecurrenceRule, d time.Time) bool {
 			return d.Day() == int(*rule.DayOfMonth)
 		}
 		return false
+	}
+	return false
+}
+
+// hasAppreciation はタスクに対して currentUserID が感謝スタンプを送信済みかを返す
+func hasAppreciation(task *model.Task, _ uint, currentUserID uint) bool {
+	for _, a := range task.Appreciations {
+		if a.FromUserID == currentUserID {
+			return true
+		}
 	}
 	return false
 }

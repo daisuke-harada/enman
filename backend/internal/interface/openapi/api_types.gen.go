@@ -143,7 +143,9 @@ type CalendarDayItem struct {
 
 // CalendarTaskItem defines model for CalendarTaskItem.
 type CalendarTaskItem struct {
-	Category *string `json:"category,omitempty"`
+	// AppreciatedByMe ログインユーザーが感謝スタンプを送信済みかどうか
+	AppreciatedByMe *bool   `json:"appreciated_by_me,omitempty"`
+	Category        *string `json:"category,omitempty"`
 
 	// DoneByUserId 完了者のユーザーID（未完了は null）
 	DoneByUserId *int64 `json:"done_by_user_id,omitempty"`

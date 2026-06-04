@@ -357,12 +357,18 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
   };
 
   const handleDeleteSingle = async () => {
+    const isRecurring = !!ruleId;
     try {
       if (taskId) {
-        // 実体化済み: cancelled に更新して仮想再生成を防ぐ
-        await cancelTask.mutateAsync(taskId);
+        if (isRecurring) {
+          // 繰り返しタスク: cancelled にして仮想再生成を防ぐ
+          await cancelTask.mutateAsync(taskId);
+        } else {
+          // 普通のタスク: ハード削除
+          await deleteTask.mutateAsync(taskId);
+        }
       } else {
-        // 仮想タスク: 実体化してから cancelled にする
+        // 仮想タスク（繰り返しのみ到達）: 実体化してから cancelled にする
         const created = await createTask.mutateAsync({
           title: title || editTitle.trim(),
           category: task.category ?? undefined,
@@ -806,7 +812,6 @@ export default function HomePage() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskResponse | CalendarTaskItem | null>(null);
   const [appreciatingTaskId, setAppreciatingTaskId] = useState<number | null>(null);
-  const [sentTaskIds, setSentTaskIds] = useState<Set<number>>(new Set());
   const [pendingDeleteKey, setPendingDeleteKey] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
@@ -861,12 +866,18 @@ export default function HomePage() {
   }, [completeTask, createTask, queryClient]);
 
   const handleDesktopDeleteSingle = useCallback(async (task: CalendarTaskItem) => {
+    const isRecurring = !!task.recurrence_rule_id;
     try {
       if (task.task_id) {
-        // 実体化済み: cancelled に更新して仮想再生成を防ぐ
-        await cancelTask.mutateAsync(task.task_id);
+        if (isRecurring) {
+          // 繰り返しタスク: cancelled にして仮想再生成を防ぐ
+          await cancelTask.mutateAsync(task.task_id);
+        } else {
+          // 普通のタスク: ハード削除
+          await deleteTask.mutateAsync(task.task_id);
+        }
       } else {
-        // 仮想タスク: 実体化してから cancelled にする
+        // 仮想タスク（繰り返しのみ到達）: 実体化してから cancelled にする
         const created = await createTask.mutateAsync({
           title: task.title ?? '',
           category: task.category ?? undefined,
@@ -879,7 +890,7 @@ export default function HomePage() {
       }
       setPendingDeleteKey(null);
     } catch { }
-  }, [cancelTask, createTask]);
+  }, [cancelTask, deleteTask, createTask]);
 
   const handleDesktopDeleteAll = useCallback(async (task: CalendarTaskItem) => {
     const ruleId = task.recurrence_rule_id;
@@ -1037,7 +1048,7 @@ export default function HomePage() {
 
                       {/* 右: ありがとうボタン */}
                       {isDone && task.task_id && task.done_by_user_id !== user?.id && (
-                        sentTaskIds.has(task.task_id) ? (
+                        task.appreciated_by_me ? (
                           <span className="shrink-0 flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
                             <Heart size={10} fill="#FF6F9C" />
                             ありがとう
@@ -1191,7 +1202,7 @@ export default function HomePage() {
                             <div className="shrink-0 flex items-center gap-2">
                               {/* ありがとうボタン */}
                               {isDone && task.task_id && task.done_by_user_id !== user?.id && (
-                                sentTaskIds.has(task.task_id) ? (
+                                task.appreciated_by_me ? (
                                   <span className="flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
                                     <Heart size={10} fill="#FF6F9C" />
                                     送信済み
@@ -1258,7 +1269,7 @@ export default function HomePage() {
           <AppreciationSheet
             taskId={appreciatingTaskId}
             onClose={() => setAppreciatingTaskId(null)}
-            onSent={() => setSentTaskIds(prev => new Set(prev).add(appreciatingTaskId!))}
+            onSent={() => setAppreciatingTaskId(null)}
           />
         )}
         {showCalendar && (

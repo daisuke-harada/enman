@@ -1050,3 +1050,6 @@ components:
           type: string
           nullable: true
           description: "完了者の名前（未完了は null）"
+        appreciated_by_me:
+          type: boolean
+          description: "ログインユーザーが感謝スタンプを送信済みかどうか"
