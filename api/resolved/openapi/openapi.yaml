@@ -357,6 +357,36 @@ paths:
       summary: タスク完了報告
       tags:
       - tasks
+  /tasks/{taskId}/cancel:
+    patch:
+      operationId: patchTasksCancel
+      parameters:
+      - explode: false
+        in: path
+        name: taskId
+        required: true
+        schema:
+          format: int64
+          type: integer
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+          description: キャンセル成功
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getHealth_default_response"
+          description: Unexpected error
+      security:
+      - bearerAuth: []
+      summary: タスクをキャンセル（繰り返しタスクの1件スキップ）
+      tags:
+      - tasks
   /task-templates:
     get:
       operationId: getTaskTemplates
@@ -1002,6 +1032,7 @@ components:
           enum:
           - pending
           - done
+          - cancelled
           type: string
         done_at:
           format: date-time
@@ -1333,6 +1364,7 @@ components:
           enum:
           - pending
           - done
+          - cancelled
           type: string
         user_id:
           format: int64

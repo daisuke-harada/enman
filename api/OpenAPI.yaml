@@ -285,6 +285,30 @@ paths:
                 $ref: "#/components/schemas/TaskResponse"
         default:
           $ref: "./components/schemas/response/default.yaml"
+  /tasks/{taskId}/cancel:
+    patch:
+      summary: タスクをキャンセル（繰り返しタスクの1件スキップ）
+      operationId: patchTasksCancel
+      tags:
+        - tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: キャンセル成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskResponse"
+        default:
+          $ref: "./components/schemas/response/default.yaml"
   /task-templates:
     get:
       summary: 家事テンプレート一覧取得
@@ -776,7 +800,7 @@ components:
           nullable: true
         status:
           type: string
-          enum: [pending, done]
+          enum: [pending, done, cancelled]
         done_at:
           type: string
           format: date-time
@@ -1008,7 +1032,7 @@ components:
           nullable: true
         status:
           type: string
-          enum: [pending, done]
+          enum: [pending, done, cancelled]
         user_id:
           type: integer
           format: int64

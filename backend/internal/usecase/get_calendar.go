@@ -58,7 +58,7 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 	}
 	familyID := *user.FamilyID
 
-	firstDay := time.Date(input.Year, time.Month(input.Month), 1, 0, 0, 0, 0, time.UTC)
+	firstDay := time.Date(input.Year, time.Month(input.Month), 1, 0, 0, 0, 0, time.Local)
 	lastDay := firstDay.AddDate(0, 1, -1)
 	nextMonthStart := firstDay.AddDate(0, 1, 0)
 
@@ -117,6 +117,10 @@ func (i *GetCalendarInteractor) Execute(ctx context.Context, input GetCalendarIn
 			idx := dayIndex[dateStr]
 
 			if actual, ok := actualInstances[key]; ok {
+				// cancelled は表示しない（仮想インスタンスの再生成を防ぐだけ）
+				if actual.Status == model.TaskStatusCancelled {
+					continue
+				}
 				// 実体化済みタスクを使う
 				taskIDCopy := actual.ID
 				ruleIDCopy := rule.ID

@@ -25,6 +25,7 @@ var bearerAuthRoutes = map[string]struct{}{
 	"DELETE /tasks/:taskId": {},
 	"PATCH /tasks/:taskId": {},
 	"POST /tasks/:taskId/appreciations": {},
+	"PATCH /tasks/:taskId/cancel": {},
 	"PATCH /tasks/:taskId/done": {},
 	"GET /users/me": {},
 	"PATCH /users/me": {},

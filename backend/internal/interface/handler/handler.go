@@ -47,6 +47,9 @@ func NewHandler(container *di.Container) *Handler {
 		PatchTasksDoneHandler: PatchTasksDoneHandler{
 			InputPort: di.MustInvoke[usecase.CompleteTaskInputPort](container),
 		},
+		PatchTasksCancelHandler: PatchTasksCancelHandler{
+			InputPort: di.MustInvoke[usecase.CancelTaskInputPort](container),
+		},
 		GetTaskTemplatesHandler: GetTaskTemplatesHandler{
 			InputPort: di.MustInvoke[usecase.ListTaskTemplatesInputPort](container),
 		},

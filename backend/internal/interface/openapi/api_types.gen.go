@@ -15,13 +15,16 @@ const (
 
 // Defines values for CalendarTaskItemStatus.
 const (
-	CalendarTaskItemStatusDone    CalendarTaskItemStatus = "done"
-	CalendarTaskItemStatusPending CalendarTaskItemStatus = "pending"
+	CalendarTaskItemStatusCancelled CalendarTaskItemStatus = "cancelled"
+	CalendarTaskItemStatusDone      CalendarTaskItemStatus = "done"
+	CalendarTaskItemStatusPending   CalendarTaskItemStatus = "pending"
 )
 
 // Valid indicates whether the value is a known member of the CalendarTaskItemStatus enum.
 func (e CalendarTaskItemStatus) Valid() bool {
 	switch e {
+	case CalendarTaskItemStatusCancelled:
+		return true
 	case CalendarTaskItemStatusDone:
 		return true
 	case CalendarTaskItemStatusPending:
@@ -75,13 +78,16 @@ func (e RecurrenceRuleResponseFrequency) Valid() bool {
 
 // Defines values for TaskResponseStatus.
 const (
-	TaskResponseStatusDone    TaskResponseStatus = "done"
-	TaskResponseStatusPending TaskResponseStatus = "pending"
+	TaskResponseStatusCancelled TaskResponseStatus = "cancelled"
+	TaskResponseStatusDone      TaskResponseStatus = "done"
+	TaskResponseStatusPending   TaskResponseStatus = "pending"
 )
 
 // Valid indicates whether the value is a known member of the TaskResponseStatus enum.
 func (e TaskResponseStatus) Valid() bool {
 	switch e {
+	case TaskResponseStatusCancelled:
+		return true
 	case TaskResponseStatusDone:
 		return true
 	case TaskResponseStatusPending:

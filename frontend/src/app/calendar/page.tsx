@@ -8,6 +8,10 @@ import type { CalendarDayItem, CalendarTaskItem } from '@/api-client/types.gen';
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
 
+function toLocalDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 const MEMBER_COLORS = [
   'bg-[#2EC58A]',
   'bg-[#FF6F9C]',
@@ -207,7 +211,7 @@ export default function CalendarPage() {
   };
 
   const selectedTasks = selectedDate
-    ? (dayTaskMap.get(selectedDate.toISOString().slice(0, 10)) ?? [])
+    ? (dayTaskMap.get(toLocalDateStr(selectedDate)) ?? [])
     : [];
 
   return (
@@ -258,14 +262,14 @@ export default function CalendarPage() {
               if (!date) {
                 return <div key={`empty-${idx}`} className="min-h-[52px]" />;
               }
-              const dateStr = date.toISOString().slice(0, 10);
+              const dateStr = toLocalDateStr(date);
               const tasks = dayTaskMap.get(dateStr) ?? [];
               const isToday =
                 date.getFullYear() === today.getFullYear() &&
                 date.getMonth() === today.getMonth() &&
                 date.getDate() === today.getDate();
               const isSelected =
-                selectedDate?.toISOString().slice(0, 10) === dateStr;
+                selectedDate != null && toLocalDateStr(selectedDate) === dateStr;
 
               return (
                 <div

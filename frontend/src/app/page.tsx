@@ -5,7 +5,7 @@ import { Calendar, Heart, Inbox, Pencil, Pin, RefreshCw, Trash2, User } from 'lu
 import type { CalendarTaskItem, TaskResponse } from '@/api-client/types.gen';
 import { useCalendar, useCreateRecurrenceRule, useDeleteRecurrenceRule } from '@/hooks/useCalendar';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useCompleteTask, useCreateTask, useDeleteTask, useUpdateTask } from '@/hooks/useTasks';
+import { useCompleteTask, useCreateTask, useDeleteTask, useUpdateTask, useCancelTask } from '@/hooks/useTasks';
 
 import { AppShell } from '@/components/AppShell';
 import { EnmanMark } from '@/components/EnmanMark';
@@ -332,10 +332,11 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
   const updateTask = useUpdateTask();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
+  const cancelTask = useCancelTask();
   const deleteRule = useDeleteRecurrenceRule();
   const taskId = 'id' in task ? task.id : ('task_id' in task ? task.task_id : undefined);
   const ruleId = task.recurrence_rule_id ?? undefined;
-  const isPending = updateTask.isPending || createTask.isPending || deleteTask.isPending || deleteRule.isPending;
+  const isPending = updateTask.isPending || createTask.isPending || deleteTask.isPending || cancelTask.isPending || deleteRule.isPending;
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -358,9 +359,10 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
   const handleDeleteSingle = async () => {
     try {
       if (taskId) {
-        await deleteTask.mutateAsync(taskId);
+        // 実体化済み: cancelled に更新して仮想再生成を防ぐ
+        await cancelTask.mutateAsync(taskId);
       } else {
-        // 仮想タスク（未来の繰り返し）: 実体化してから即削除でこの日をスキップ
+        // 仮想タスク: 実体化してから cancelled にする
         const created = await createTask.mutateAsync({
           title: title || editTitle.trim(),
           category: task.category ?? undefined,
@@ -368,7 +370,7 @@ function TaskEditModal({ task, onClose }: { task: TaskResponse | CalendarTaskIte
           scheduled_date: 'scheduled_date' in task ? task.scheduled_date ?? undefined : undefined,
         });
         if (created?.id) {
-          await deleteTask.mutateAsync(created.id);
+          await cancelTask.mutateAsync(created.id);
         }
       }
       onClose();
@@ -812,6 +814,7 @@ export default function HomePage() {
   const completeTask = useCompleteTask();
   const createTask = useCreateTask();
   const deleteTask = useDeleteTask();
+  const cancelTask = useCancelTask();
   const deleteRule = useDeleteRecurrenceRule();
 
   const [calYear, setCalYear] = useState(today.getFullYear());
@@ -860,9 +863,10 @@ export default function HomePage() {
   const handleDesktopDeleteSingle = useCallback(async (task: CalendarTaskItem) => {
     try {
       if (task.task_id) {
-        await deleteTask.mutateAsync(task.task_id);
+        // 実体化済み: cancelled に更新して仮想再生成を防ぐ
+        await cancelTask.mutateAsync(task.task_id);
       } else {
-        // 仮想タスク: 実体化してから即削除
+        // 仮想タスク: 実体化してから cancelled にする
         const created = await createTask.mutateAsync({
           title: task.title ?? '',
           category: task.category ?? undefined,
@@ -870,12 +874,12 @@ export default function HomePage() {
           scheduled_date: task.scheduled_date ?? undefined,
         });
         if (created?.id) {
-          await deleteTask.mutateAsync(created.id);
+          await cancelTask.mutateAsync(created.id);
         }
       }
       setPendingDeleteKey(null);
     } catch { }
-  }, [deleteTask, createTask]);
+  }, [cancelTask, createTask]);
 
   const handleDesktopDeleteAll = useCallback(async (task: CalendarTaskItem) => {
     const ruleId = task.recurrence_rule_id;
@@ -1190,7 +1194,7 @@ export default function HomePage() {
                                 sentTaskIds.has(task.task_id) ? (
                                   <span className="flex items-center gap-1 text-[10px] font-semibold text-[#FF6F9C] bg-[#FF6F9C]/10 px-2.5 py-1.5 rounded-full">
                                     <Heart size={10} fill="#FF6F9C" />
-                                    送済み
+                                    送信済み
                                   </span>
                                 ) : (
                                   <motion.button

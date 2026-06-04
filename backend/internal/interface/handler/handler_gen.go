@@ -17,6 +17,7 @@ type Handler struct {
 	GetUsersMeHandler
 	PatchRecurrenceRulesHandler
 	PatchTaskHandler
+	PatchTasksCancelHandler
 	PatchTasksDoneHandler
 	PatchUsersMeHandler
 	PostAuthLoginHandler
