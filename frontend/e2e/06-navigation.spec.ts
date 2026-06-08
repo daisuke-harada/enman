@@ -18,8 +18,8 @@ test.describe('ナビゲーション', () => {
       await expect(page).toHaveURL((url) => url.pathname === '/');
     });
 
-    test('統計タブに遷移できる', async ({ page }) => {
-      await page.getByRole('link', { name: '統計' }).click({ force: true });
+    test('ダッシュボードタブに遷移できる', async ({ page }) => {
+      await page.getByRole('link', { name: 'ダッシュボード' }).click({ force: true });
       await expect(page).toHaveURL(/\/dashboard/, { timeout: 8000 });
     });
 
